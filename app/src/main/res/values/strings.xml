@@ -1,0 +1,7 @@
+<resources>
+    <string name="app_name">HappyTravel</string>
+    <string name="welcome_words">Copyright 2016 @ xxxx Company\n v 3.3.4 </string>
+    <string name="title_activity_login">LOGIN </string>
+    <string name="save_info">保存用户信息</string>
+    <string name="network_unable">当前网络不可用,请检查网络设置</string>
+</resources>
