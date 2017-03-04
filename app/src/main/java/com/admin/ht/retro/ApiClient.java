@@ -33,7 +33,7 @@ public class ApiClient {
     }
 
     public static Retrofit retrofit = new Retrofit.Builder()
-            .baseUrl("http://192.168.0.185:8080/HappyTravel/servlet/")//★这里最后面必须能带“/”
+            .baseUrl("http://192.168.0.185:8080/HappyTravel/servlet/")//这里最后面必须能带“/”
             .addConverterFactory(GsonConverterFactory.create())//设置将json解析为javabean所用的方式
             .addCallAdapterFactory(RxJavaCallAdapterFactory.create())
             .build();

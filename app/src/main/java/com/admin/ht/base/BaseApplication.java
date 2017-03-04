@@ -4,7 +4,7 @@ import android.app.Activity;
 import android.app.Application;
 
 import com.facebook.drawee.backends.pipeline.Fresco;
-
+import com.baidu.mapapi.SDKInitializer;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -19,6 +19,7 @@ public class BaseApplication extends Application {
     public void onCreate() {
         super.onCreate();
         Fresco.initialize(this);
+        SDKInitializer.initialize(this);
     }
 
     public void addActivity(Activity activity) {

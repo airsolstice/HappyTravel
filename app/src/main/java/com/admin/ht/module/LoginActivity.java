@@ -13,6 +13,7 @@ import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
+
 import com.admin.ht.base.BaseActivity;
 import com.admin.ht.R;
 import com.admin.ht.model.ForgotPwdResponse;
@@ -22,6 +23,7 @@ import com.admin.ht.retro.ApiClient;
 import com.admin.ht.utils.KeyBoardUtils;
 import com.admin.ht.utils.LogUtils;
 import com.admin.ht.utils.NetUtils;
+
 import butterknife.Bind;
 import butterknife.OnClick;
 import rx.Subscriber;
@@ -59,71 +61,13 @@ public class LoginActivity extends BaseActivity {
     }
 
     @OnClick(R.id.register)
-    public void register(){
-        ApiClient.service.register(mCount.getText().toString(), mPwd.getText().toString())
-                .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(new Subscriber<RegisterResponse>() {
-                    boolean isSuccess = false;
-
-                    @Override
-                    public void onCompleted() {
-                        if (isSuccess) {
-                            Toast.makeText(LoginActivity.this, "register successfully", Toast
-                                    .LENGTH_SHORT).show();
-                        }
-                    }
-
-                    @Override
-                    public void onError(Throwable e) {
-                        LogUtils.e(TAG, "error:" + e.getMessage());
-                    }
-
-                    @Override
-                    public void onNext(RegisterResponse entity) {
-                        LogUtils.e(TAG, entity.toString());
-                        if (entity.result.equals("success")) {
-                            isSuccess = true;
-                        }
-                    }
-                });
-
-
-        //TODO: new a RegisterActivity
+    public void register() {
+        startActivity(new Intent(mContext, RegisterActivity.class));
     }
+
     @OnClick(R.id.forgot_pwd)
-    public void forgotPwd(){
-
-        ApiClient.service.forgotPwd(mCount.getText().toString())
-                .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(new Subscriber<ForgotPwdResponse>() {
-                    boolean isSuccess = false;
-                    @Override
-                    public void onCompleted() {
-                        if (isSuccess) {
-                            Toast.makeText(LoginActivity.this, "get pwd successfully", Toast
-                                    .LENGTH_SHORT).show();
-
-                        }
-                    }
-
-                    @Override
-                    public void onError(Throwable e) {
-                        LogUtils.e(TAG, "error:" + e.getMessage());
-                    }
-
-                    @Override
-                    public void onNext(ForgotPwdResponse entity) {
-                        LogUtils.e(TAG, entity.toString());
-                        if (entity.result.equals("success")) {
-                            isSuccess = true;
-
-                        }
-                    }
-                });
-
-        // TODO: new a ForgotPwdActivity
+    public void forgotPwd() {
+        startActivity(new Intent(mContext, ForgotPwdActivity.class));
     }
 
 
@@ -136,17 +80,26 @@ public class LoginActivity extends BaseActivity {
         }
         editor.putBoolean(IS_SAVED, mIsSaved.isChecked());
         editor.commit();
+        //链接服务时使用
+        //loginInSvc();
+        startActivity(new Intent(LoginActivity.this, HomeActivity.class));
+        finish();
+    }
+
+
+    public void loginInSvc() {
         ApiClient.service.loginIn(mCount.getText().toString(), mPwd.getText().toString())
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(new Subscriber<LoginInResponse>() {
                     boolean isSuccess = false;
+
                     @Override
                     public void onCompleted() {
                         if (isSuccess) {
                             Toast.makeText(LoginActivity.this, "login in successfully", Toast
                                     .LENGTH_SHORT).show();
-                            startActivity(new Intent(LoginActivity.this,HomeActivity.class));
+                            startActivity(new Intent(LoginActivity.this, HomeActivity.class));
                             finish();
                         }
                     }
@@ -165,8 +118,8 @@ public class LoginActivity extends BaseActivity {
 
                     }
                 });
-    }
 
+    }
 
 
     @OnClick(R.id.network_tip)
@@ -174,8 +127,6 @@ public class LoginActivity extends BaseActivity {
         LogUtils.e(TAG, "set network");
         NetUtils.openSetting(this);
     }
-
-
 
 
     @Override
@@ -207,7 +158,6 @@ public class LoginActivity extends BaseActivity {
         return super.onKeyDown(keyCode, event);
 
     }
-
 
 
     @Override
