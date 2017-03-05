@@ -7,5 +7,4 @@ package com.admin.ht.base;
 public class Constant {
 
 
-
 }

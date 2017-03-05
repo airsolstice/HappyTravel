@@ -47,9 +47,7 @@ public abstract  class BaseAdapter<T> extends android.widget.BaseAdapter
     public  View getView(int position, View convertView, ViewGroup parent){
 
         int layoutId = getLayoutId();
-
         ViewHolder mHolder = ViewHolder.get(convertView,mContext,layoutId,parent,position);
-
         convert(mHolder,getItem(position));
 
         return mHolder.getConvertView();

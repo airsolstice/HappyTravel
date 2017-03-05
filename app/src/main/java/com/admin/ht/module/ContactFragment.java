@@ -18,10 +18,9 @@ import com.admin.ht.R;
 
 public class ContactFragment extends Fragment {
 
-    private Fragment mSubContact = new SubConatactFragment();
+    private Fragment mSubContact = new SubContactFragment();
     private Fragment mGroup = new GroupFragment();
     private Fragment mMessage = new MessageFragment();
-
 
     View.OnClickListener mListener = new View.OnClickListener() {
         @Override

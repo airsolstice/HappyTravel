@@ -37,11 +37,31 @@ public class HomeActivity extends BaseActivity {
     @Bind(R.id.add)
     ImageView mAdd;
     @Bind(R.id.search)
-    TextView mSearch;
+    ImageView mSearch;
     @Bind(R.id.lab_title)
     TextView mTitle;
 
     private List<Fragment> mFrgs = new ArrayList<>();
+
+    @Override
+    protected String getTAG() {
+        return "Home";
+    }
+
+    @Override
+    public boolean setTranslucent() {
+        return true;
+    }
+
+    @Override
+    public boolean setDebug() {
+        return false;
+    }
+
+    @Override
+    public int setLayoutId() {
+        return R.layout.activity_home;
+    }
 
     @RequiresApi(api = Build.VERSION_CODES.M)
     @Override
@@ -61,7 +81,6 @@ public class HomeActivity extends BaseActivity {
         //mPager.setOffscreenPageLimit(4);
         mPager.addOnPageChangeListener(adapter);
     }
-
 
     @OnClick(R.id.contact)
     public void go2Contact() {
@@ -91,7 +110,6 @@ public class HomeActivity extends BaseActivity {
             return mFrgs.size();
         }
 
-
         @Override
         public void onPageSelected(int position) {
             if (position == 0) {
@@ -107,7 +125,6 @@ public class HomeActivity extends BaseActivity {
 
             } else {
                 mTitle.setText("联系人");
-
                 if(mPager.isNoScroll()){
                     mPager.setNoScroll(false);
                 }
@@ -123,35 +140,14 @@ public class HomeActivity extends BaseActivity {
 
         @Override
         public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
-
         }
 
         @Override
         public void onPageScrollStateChanged(int state) {
-
         }
     }
 
 
-    @Override
-    protected String getTAG() {
-        return "Home";
-    }
-
-    @Override
-    public boolean setTranslucent() {
-        return true;
-    }
-
-    @Override
-    public boolean setDebug() {
-        return false;
-    }
-
-    @Override
-    public int setLayoutId() {
-        return R.layout.activity_home;
-    }
 
 
 }

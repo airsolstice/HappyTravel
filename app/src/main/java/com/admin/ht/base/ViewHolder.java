@@ -42,8 +42,6 @@ public class ViewHolder {
 
 
         if (convertView == null)
-        //�ж�convertView�����ûView�洢����ʵ��һ����
-        // ��Ȼ�ͻ�ȡView�����أ�֮������ô��������Ϊ��new��ʱ���п����õ�
         {
             return new ViewHolder(context, layoutId, parent, position);
         } else {
@@ -112,7 +110,6 @@ public class ViewHolder {
 
     public ViewHolder setImageURL(int viewId, final String url) {
         final ImageView mImg = getView(viewId);
-        //�������ͨ������ܼ���ͼƬ��ͨ��url��תΪBitmap������ImageView������
         //Bitmap bitmap = ImageLoader.getInstance.loading(url);
         //mImg.setImageBitmap(bitmap);
 

@@ -18,7 +18,6 @@
     <!-- 访问网络，网络定位需要上网 -->
     <uses-permission android:name="android.permission.INTERNET" />
 
-
     <supports-screens
         android:anyDensity="true"
         android:largeScreens="true"
@@ -27,7 +26,9 @@
         android:smallScreens="true" />
 
     <!-- OpenGLES 2.0 -->
-    <uses-feature android:glEsVersion="0x00020000" android:required="true" />
+    <uses-feature
+        android:glEsVersion="0x00020000"
+        android:required="true" />
 
     <application
         android:name=".base.BaseApplication"
@@ -36,19 +37,17 @@
         android:label="@string/app_name"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-
         <meta-data
             android:name="com.baidu.lbsapi.API_KEY"
-            android:value="7MGtGOaNuIaTGYsLGyRHl8IDahBf36Px"/>
-
+            android:value="7MGtGOaNuIaTGYsLGyRHl8IDahBf36Px" />
         <meta-data
             android:name="BaiduMobAd_STAT_ID"
             android:value="48ae76de3f" />
+
         <service
             android:name="com.baidu.location.f"
             android:enabled="true"
-            android:process=":remote" >
-        </service>
+            android:process=":remote"></service>
 
         <activity
             android:name=".module.WelcomeActivity"
@@ -67,7 +66,9 @@
             android:name=".module.HomeActivity"
             android:theme="@style/AppTheme.NoActionBar" />
         <activity android:name=".module.RegisterActivity" />
-        <activity android:name=".module.ForgotPwdActivity"></activity>
+        <activity android:name=".module.ForgotPwdActivity" />
+        <activity android:name=".module.SingleChatActivity"
+            android:theme="@style/AppTheme.NoActionBar"></activity>
     </application>
 
 </manifest>

@@ -9,8 +9,7 @@
     <View
         android:layout_width="match_parent"
         android:layout_height="10dp"
-        android:background="#7fbdbdbd"
-        />
+        android:background="#7fbdbdbd" />
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -58,13 +57,12 @@
     <View
         android:layout_width="match_parent"
         android:layout_height="20dp"
-        android:background="#7fbdbdbd"
-        />
+        android:background="#7fbdbdbd" />
 
     <FrameLayout
         android:id="@+id/fragment"
         android:layout_width="match_parent"
-        android:background="@color/white"
-        android:layout_height="match_parent" />
+        android:layout_height="wrap_content"
+        android:background="@color/white" />
 
 </LinearLayout>
