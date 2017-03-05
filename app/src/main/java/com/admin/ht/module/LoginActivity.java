@@ -5,22 +5,17 @@ import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.view.KeyEvent;
-import android.view.MotionEvent;
 import android.view.View;
 import android.view.Window;
 import android.widget.CheckBox;
 import android.widget.EditText;
-import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.admin.ht.base.BaseActivity;
 import com.admin.ht.R;
-import com.admin.ht.model.ForgotPwdResponse;
-import com.admin.ht.model.LoginInResponse;
-import com.admin.ht.model.RegisterResponse;
+import com.admin.ht.model.RespLoginIn;
 import com.admin.ht.retro.ApiClient;
-import com.admin.ht.utils.KeyBoardUtils;
 import com.admin.ht.utils.LogUtils;
 import com.admin.ht.utils.NetUtils;
 
@@ -91,7 +86,7 @@ public class LoginActivity extends BaseActivity {
         ApiClient.service.loginIn(mCount.getText().toString(), mPwd.getText().toString())
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(new Subscriber<LoginInResponse>() {
+                .subscribe(new Subscriber<RespLoginIn>() {
                     boolean isSuccess = false;
 
                     @Override
@@ -110,7 +105,7 @@ public class LoginActivity extends BaseActivity {
                     }
 
                     @Override
-                    public void onNext(LoginInResponse entity) {
+                    public void onNext(RespLoginIn entity) {
                         LogUtils.e(TAG, entity.toString());
                         if (entity.getResult().equals("success")) {
                             isSuccess = true;

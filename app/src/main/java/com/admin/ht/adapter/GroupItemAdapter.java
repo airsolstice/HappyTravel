@@ -1,13 +1,11 @@
 package com.admin.ht.adapter;
 
 import android.content.Context;
-import android.widget.TextView;
 
 import com.admin.ht.R;
 import com.admin.ht.base.BaseAdapter;
 import com.admin.ht.base.ViewHolder;
 import com.admin.ht.model.GroupItem;
-import com.admin.ht.model.ItemFriEntity;
 
 import java.util.List;
 

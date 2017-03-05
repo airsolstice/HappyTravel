@@ -3,11 +3,11 @@ package com.admin.ht.model;
 /**
  * Created by Administrator on 2016/11/18 0018.
  */
-public class ForgotPwdResponse {
+public class RespRegister {
     public String result;
     public String method;
 
-    public ForgotPwdResponse(String result, String method) {
+    public RespRegister(String result, String method) {
         this.result = result;
         this.method = method;
     }
@@ -30,7 +30,7 @@ public class ForgotPwdResponse {
 
     @Override
     public String toString() {
-        return "ForgotPwdResponse{" +
+        return "RespRegister{" +
                 "result='" + result + '\'' +
                 ", method='" + method + '\'' +
                 '}';

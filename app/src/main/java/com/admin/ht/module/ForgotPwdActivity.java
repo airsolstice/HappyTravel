@@ -6,7 +6,7 @@ import android.widget.Toast;
 
 import com.admin.ht.R;
 import com.admin.ht.base.BaseActivity;
-import com.admin.ht.model.ForgotPwdResponse;
+import com.admin.ht.model.RespForgotPwd;
 import com.admin.ht.retro.ApiClient;
 import com.admin.ht.utils.LogUtils;
 
@@ -29,7 +29,7 @@ public class ForgotPwdActivity extends BaseActivity {
         ApiClient.service.forgotPwd(count)
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(new Subscriber<ForgotPwdResponse>() {
+                .subscribe(new Subscriber<RespForgotPwd>() {
                     boolean isSuccess = false;
 
                     @Override
@@ -46,7 +46,7 @@ public class ForgotPwdActivity extends BaseActivity {
                     }
 
                     @Override
-                    public void onNext(ForgotPwdResponse entity) {
+                    public void onNext(RespForgotPwd entity) {
                         LogUtils.e(TAG, entity.toString());
                         if (entity.result.equals("success")) {
                             isSuccess = true;

@@ -6,7 +6,7 @@ import android.widget.Toast;
 
 import com.admin.ht.R;
 import com.admin.ht.base.BaseActivity;
-import com.admin.ht.model.RegisterResponse;
+import com.admin.ht.model.RespRegister;
 import com.admin.ht.retro.ApiClient;
 import com.admin.ht.utils.LogUtils;
 
@@ -30,7 +30,7 @@ public class RegisterActivity extends BaseActivity {
                 ApiClient.service.register(count, pwd)
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(new Subscriber<RegisterResponse>() {
+                .subscribe(new Subscriber<RespRegister>() {
                     boolean isSuccess = false;
 
                     @Override
@@ -47,7 +47,7 @@ public class RegisterActivity extends BaseActivity {
                     }
 
                     @Override
-                    public void onNext(RegisterResponse entity) {
+                    public void onNext(RespRegister entity) {
                         LogUtils.e(TAG, entity.toString());
                         if (entity.result.equals("success")) {
                             isSuccess = true;

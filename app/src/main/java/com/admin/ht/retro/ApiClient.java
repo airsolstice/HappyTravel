@@ -1,8 +1,8 @@
 package com.admin.ht.retro;
 
-import com.admin.ht.model.ForgotPwdResponse;
-import com.admin.ht.model.LoginInResponse;
-import com.admin.ht.model.RegisterResponse;
+import com.admin.ht.model.RespForgotPwd;
+import com.admin.ht.model.RespLoginIn;
+import com.admin.ht.model.RespRegister;
 
 import retrofit2.Retrofit;
 import retrofit2.adapter.rxjava.RxJavaCallAdapterFactory;
@@ -20,15 +20,15 @@ public class ApiClient {
 
 
         @GET("LoginInServlet")
-        Observable<LoginInResponse> loginIn(@Query("count")String count,@Query("pwd") String pwd);
+        Observable<RespLoginIn> loginIn(@Query("count")String count, @Query("pwd") String pwd);
 
 
         @GET("RegisterServlet")
-        Observable<RegisterResponse> register(@Query("count")String count,@Query("pwd") String pwd);
+        Observable<RespRegister> register(@Query("count")String count, @Query("pwd") String pwd);
 
 
         @GET("ForgotPwdServlet")
-        Observable<ForgotPwdResponse> forgotPwd(@Query("count")String count);
+        Observable<RespForgotPwd> forgotPwd(@Query("count")String count);
 
     }
 
