@@ -37,6 +37,13 @@
             android:layout_margin="5dp"
             android:src="@mipmap/ic_empty" />
 
+        <EditText
+            android:id="@+id/edit_to"
+            android:layout_width="60dp"
+            android:background="@color/white"
+            android:layout_height="35dp"
+            android:layout_margin="5dp" />
+
     </LinearLayout>
 
     <LinearLayout
@@ -46,6 +53,7 @@
         android:orientation="horizontal">
 
         <EditText
+            android:id="@+id/edit_text"
             android:layout_width="match_parent"
             android:layout_height="35dp"
             android:layout_gravity="bottom"
@@ -56,6 +64,7 @@
 
 
         <ImageView
+            android:id="@+id/send"
             android:layout_width="50dp"
             android:layout_height="35dp"
             android:layout_gravity="bottom"

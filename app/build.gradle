@@ -24,6 +24,11 @@ android {
 }
 
 dependencies {
+    repositories{
+        flatDir{
+            dirs 'libs' //就是你放aar的目录地址
+        }
+    }
     compile fileTree(include: ['*.jar'], dir: 'libs')
     testCompile 'junit:junit:4.12'
     compile 'com.android.support:design:24.2.1'
@@ -38,10 +43,18 @@ dependencies {
     //响应式框架
     compile 'io.reactivex:rxjava:1.1.0'
     compile 'io.reactivex:rxandroid:1.1.0'
-    compile 'com.squareup.retrofit2:retrofit:2.0.0-beta4'
-    compile 'com.squareup.retrofit2:converter-gson:2.0.0-beta4'
-    compile 'com.squareup.retrofit2:adapter-rxjava:2.0.0-beta4'
+    compile group: 'com.squareup.retrofit2', name: 'retrofit', version: '2.1.0'
+    compile group: 'com.squareup.retrofit2', name: 'converter-gson', version: '2.1.0'
+    compile group: 'com.squareup.retrofit2', name: 'adapter-rxjava', version: '2.1.0'
+    compile group: 'com.squareup.okhttp3', name: 'okhttp', version: '3.4.1'
+
     compile 'com.google.code.gson:gson:2.6.2'
     compile files('libs/BaiduLBS_Android.jar')
     compile files('libs/httpmime-4.1.2.jar')
+    compile files('libs/MobileIMSDK4aO.jar')
+    compile files('libs/MobileIMSDKServer_meta.jar')
+    compile 'com.alibaba:fastjson:1.2.12'
+    compile files('libs/MobTools-2017.0321.1624.jar')
+    compile name:'SMSSDK-2.1.4',ext:'aar'
+    compile name:'SMSSDKGUI-2.1.4',ext:'aar'
 }

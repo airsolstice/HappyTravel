@@ -10,6 +10,7 @@ import android.view.Window;
 import android.view.WindowManager;
 
 import com.admin.ht.R;
+import com.admin.ht.model.User;
 import com.admin.ht.utils.LogUtils;
 import com.readystatesoftware.systembartint.SystemBarTintManager;
 
@@ -36,7 +37,7 @@ public abstract class BaseActivity extends AppCompatActivity {
 
     public abstract boolean setDebug();
 
-    private boolean isDebug = setDebug();
+    protected boolean isDebug = setDebug();
 
     /**
      * 设置布局id
@@ -57,10 +58,19 @@ public abstract class BaseActivity extends AppCompatActivity {
     private View mDecorView;
 
     protected SharedPreferences mPreferences;
+
     public static String FILE_NAME = "user_login_info_file";
     public static String COUNT = "user_count";
     public static String PWD = "user_pwd";
     public static String IS_SAVED = "is_saved_flag";
+    public static String CHAT2WHO = "id";
+    public static String USER = "user";
+    public static String USER_ID = "user_id";
+    public static String USER_HEAD_URL = "user_url";
+    public static String USER_EMAIL = "user_email";
+    public static String USER_NAME = "user_name";
+    public static String USER_DEFAULT_HEAD_URL = "http://img1.imgtn.bdimg.com/it/u=3995083595,771039139&fm=214&gp=0.jpg";
+
     protected BaseApplication mApplication;
 
 
@@ -79,6 +89,32 @@ public abstract class BaseActivity extends AppCompatActivity {
 
     }
 
+    /**
+     *
+     * @param id
+     * @param name
+     * @param email
+     * @param url
+     * @return
+     */
+    public boolean putUser(String id, String name, String email, String url){
+        SharedPreferences.Editor editor = mPreferences.edit();
+        editor.putString(USER_ID, id);
+        editor.putString(USER_HEAD_URL, url);
+        editor.putString(USER_EMAIL, email);
+        editor.putString(USER_NAME, name);
+        return editor.commit();
+    }
+
+
+    public User getUser(){
+        String id = mPreferences.getString(USER_ID,"");
+        String name = mPreferences.getString(USER_NAME,"");
+        String url = mPreferences.getString(USER_HEAD_URL,USER_DEFAULT_HEAD_URL);
+        String email = mPreferences.getString(USER_EMAIL, "");
+        User user = new User(id,name, email, url);
+        return user;
+    }
 
     public void setFullScreen() {
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
@@ -112,7 +148,6 @@ public abstract class BaseActivity extends AppCompatActivity {
             }
         }
     }
-
 
 
     @Override

@@ -10,19 +10,25 @@ import android.support.v4.view.ViewPager;
 import android.view.View;
 import android.view.Window;
 import android.widget.ImageView;
-import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
-
+import com.admin.ht.IM.IMClientManager;
 import com.admin.ht.R;
 import com.admin.ht.base.BaseActivity;
+import com.admin.ht.base.Constant;
+import com.admin.ht.model.Result;
+import com.admin.ht.model.User;
+import com.admin.ht.retro.ApiClient;
+import com.admin.ht.utils.LogUtils;
 import com.admin.ht.widget.NoScrollViewPager;
-
 import java.util.ArrayList;
 import java.util.List;
 
 import butterknife.Bind;
 import butterknife.OnClick;
+import rx.Subscriber;
+import rx.android.schedulers.AndroidSchedulers;
+import rx.schedulers.Schedulers;
 
 public class HomeActivity extends BaseActivity {
 
@@ -69,6 +75,14 @@ public class HomeActivity extends BaseActivity {
         requestWindowFeature(Window.FEATURE_NO_TITLE);
         super.onCreate(savedInstanceState);
 
+        User user = (User) getIntent().getExtras().get(BaseActivity.USER);
+        if(user != null){
+            if (isDebug){
+                LogUtils.e(TAG, user.toString());
+            }
+            putUser(user.getId(),user.getName(),user.getEmail(),user.getUrl());
+        }
+
         Fragment contact = new ContactFragment();
         Fragment map = new MapFragment();
         mFrgs.add(map);
@@ -85,6 +99,51 @@ public class HomeActivity extends BaseActivity {
     @OnClick(R.id.contact)
     public void go2Contact() {
         mPager.setCurrentItem(1);
+
+        LogUtils.i(TAG, "starting retrofit");
+
+        ApiClient.service.getTrace("18140049361")
+        //ApiClient.service.updatePosition("18140049361", "40", "120")
+                //ApiClient.service.updatePosition(user.getId(), String.valueOf(ll.latitude), String.valueOf(ll.longitude))
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(new Subscriber<Result>() {
+                    Result result = null;
+                    @Override
+                    public void onCompleted() {
+                        String str;
+                        if(result == null){
+                            str = "未知异常";
+                        } else if (result.getCode() == Constant.SUCCESS) {
+                            str = "更新成功";
+                        } else if (result.getCode() == Constant.FAIL) {
+                            str = "更新失败";
+                        } else if(result.getCode() == Constant.EXECUTING){
+                            str = "服务器繁忙";
+                        } else {
+                            str = "未知异常";
+                        }
+                        if(isDebug){
+                            LogUtils.i(TAG, str);
+                        }
+                    }
+
+                    @Override
+                    public void onNext(Result result) {
+                        if(isDebug){
+                            LogUtils.i(TAG, result.toString());
+                        }
+                        this.result = result;
+                    }
+
+                    @Override
+                    public void onError(Throwable e) {
+                        LogUtils.i(TAG, e.toString());
+                        e.printStackTrace();
+                    }
+                });
+
+
     }
 
     @OnClick(R.id.back)
@@ -148,6 +207,9 @@ public class HomeActivity extends BaseActivity {
     }
 
 
-
-
+    @Override
+    protected void onDestroy() {
+        IMClientManager.getInstance(mContext).release();
+        super.onDestroy();
+    }
 }

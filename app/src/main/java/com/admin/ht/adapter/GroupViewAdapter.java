@@ -10,6 +10,7 @@ import android.widget.ListView;
 import android.widget.RelativeLayout;
 
 import com.admin.ht.R;
+import com.admin.ht.base.BaseActivity;
 import com.admin.ht.base.BaseAdapter;
 import com.admin.ht.base.ViewHolder;
 import com.admin.ht.model.Group;
@@ -30,7 +31,7 @@ public class GroupViewAdapter extends BaseAdapter<Group> {
     }
 
     @Override
-    public void convert(ViewHolder holder, Group item) {
+    public void convert(ViewHolder holder, final Group item) {
         //设置分组的名称
         holder.setText(R.id.group_name, item.getGroupName());
         //设置分组容量
@@ -38,16 +39,16 @@ public class GroupViewAdapter extends BaseAdapter<Group> {
         holder.setText(R.id.item_count, count);
         //设置分组下的列表
         final ListView subList = holder.getView(R.id.sub_item);
-        GroupItemAdapter adapter = new GroupItemAdapter(mContext, item.getGroupItems());
+        final GroupItemAdapter adapter = new GroupItemAdapter(mContext, item.getGroupItems());
         subList.setAdapter(adapter);
         subList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+
             @Override
             public void onItemClick(AdapterView<?> adapter, View view, int index, long id) {
 
                 Intent intent = new Intent(mContext, SingleChatActivity.class);
+                intent.putExtra(BaseActivity.CHAT2WHO, item.getGroupItems().get(index).getId()+"");
                 mContext.startActivity(intent);
-
-
             }
         });
         //设置分组小的列表高度

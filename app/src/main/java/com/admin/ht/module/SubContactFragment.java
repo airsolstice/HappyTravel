@@ -10,6 +10,7 @@ import android.widget.ListView;
 
 import com.admin.ht.R;
 import com.admin.ht.adapter.GroupViewAdapter;
+import com.admin.ht.base.BaseFragment;
 import com.admin.ht.model.Group;
 import com.admin.ht.model.GroupItem;
 
@@ -20,8 +21,18 @@ import java.util.List;
  * Created by Spec_Inc on 3/4/2017.
  */
 
-public class SubContactFragment extends Fragment {
+public class SubContactFragment extends BaseFragment {
 
+
+    @Override
+    protected String getTAG() {
+        return "Sub Contact";
+    }
+
+    @Override
+    public boolean setDebug() {
+        return true;
+    }
 
     @Override
     public View onCreateView(LayoutInflater inflater,

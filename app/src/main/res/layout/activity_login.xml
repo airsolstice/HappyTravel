@@ -4,7 +4,7 @@
               android:layout_width="match_parent"
               android:layout_height="match_parent"
               android:orientation="vertical"
-              android:background="@mipmap/srart_bg_img"
+              android:background="@mipmap/start_bg_img"
               android:weightSum="3">
 
 
@@ -21,7 +21,7 @@
             android:gravity="center_vertical"
             android:paddingLeft="16dp"
             android:text="@string/network_unable"
-            android:visibility="visible"/>
+            android:visibility="gone"/>
 
 
         <TextView
@@ -43,13 +43,13 @@
         android:orientation="vertical">
 
         <EditText
-            android:id="@+id/count"
+            android:id="@+id/phone"
             android:layout_width="match_parent"
             android:layout_height="40dp"
             android:layout_alignParentTop="true"
             android:layout_margin="10dp"
             android:background="@drawable/rect_white_blue_border"
-            android:hint="account"
+            android:hint=" phone number"
             android:padding="10dp"
             />
 
@@ -60,7 +60,7 @@
             android:layout_height="40dp"
             android:layout_margin="10dp"
             android:background="@drawable/rect_white_blue_border"
-            android:hint="password"
+            android:hint=" password"
             android:inputType="textPassword"
             android:padding="10dp"
             />
@@ -76,7 +76,7 @@
 
 
         <Button
-            android:id="@+id/login_in"
+            android:id="@+id/do_login_in"
             android:layout_width="match_parent"
             android:layout_height="40dp"
             android:layout_margin="10dp"

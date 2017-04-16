@@ -2,13 +2,16 @@ package com.admin.ht.module;
 
 import android.os.Bundle;
 import android.support.annotation.Nullable;
-import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
 import com.admin.ht.R;
+import com.admin.ht.base.BaseFragment;
+import com.admin.ht.model.User;
 import com.admin.ht.utils.LogUtils;
+import com.admin.ht.utils.StringUtils;
+import com.admin.ht.utils.ToastUtils;
 import com.baidu.location.BDLocation;
 import com.baidu.location.BDLocationListener;
 import com.baidu.location.LocationClient;
@@ -26,7 +29,7 @@ import com.baidu.mapapi.model.LatLng;
  * Created by Spec_Inc on 2/19/2017.
  */
 
-public class MapFragment extends Fragment {
+public class MapFragment extends BaseFragment {
 
     private MapView mMapView;
     private BaiduMap mBaiduMap;
@@ -36,8 +39,27 @@ public class MapFragment extends Fragment {
     private boolean isFirstLoc = true;
 
 
+    public void putUserLocSvc(LatLng ll){
+        User user = getUser();
+
+        if(StringUtils.isEmpty(user.getId()) || !StringUtils.isPhone(user.getId())){
+            if(isDebug){
+                LogUtils.e(TAG, "上传用户位置失败");
+            }
+            ToastUtils.showShort(getContext(), "上传用户位置失败");
+            return;
+        }
+
+        if(isDebug){
+            LogUtils.e(TAG, user.toString());
+            LogUtils.e(TAG, ll.toString());
+
+        }
+
+    }
+
     /**
-     * 定位SDK监听函数
+     * 定位监听函数
      */
     public class LocationListener implements BDLocationListener {
 
@@ -48,17 +70,18 @@ public class MapFragment extends Fragment {
                 return;
             }
 
-
             MyLocationData locData = new MyLocationData.Builder()
                     .accuracy(location.getRadius())
                     // 此处设置开发者获取到的方向信息，顺时针0-360
                     .direction(100).latitude(location.getLatitude())
                     .longitude(location.getLongitude()).build();
             mBaiduMap.setMyLocationData(locData);
+            LatLng ll = new LatLng(location.getLatitude(),
+                    location.getLongitude());
+
             if (isFirstLoc) {
+                putUserLocSvc(ll);
                 isFirstLoc = false;
-                LatLng ll = new LatLng(location.getLatitude(),
-                        location.getLongitude());
                 MapStatus.Builder builder = new MapStatus.Builder();
                 builder.target(ll).zoom(18.0f);
                 mBaiduMap.animateMapStatus(MapStatusUpdateFactory.newMapStatus(builder.build()));
@@ -67,10 +90,7 @@ public class MapFragment extends Fragment {
 
         @Override
         public void onConnectHotSpotMessage(String s, int i) {
-
         }
-
-
     }
 
     @Nullable
@@ -82,9 +102,8 @@ public class MapFragment extends Fragment {
 
         mCurrentMode = LocationMode.NORMAL;
         mBaiduMap = mMapView.getMap();
-        mBaiduMap
-                .setMyLocationConfigeration(new MyLocationConfiguration(
-                        mCurrentMode, true, null));
+        mBaiduMap.setMyLocationConfigeration(new MyLocationConfiguration(
+                mCurrentMode, true, null));
 
         // 开启定位图层
         mBaiduMap.setMyLocationEnabled(true);
@@ -94,13 +113,17 @@ public class MapFragment extends Fragment {
         LocationClientOption option = new LocationClientOption();
         option.setOpenGps(true); // 打开gps
         option.setCoorType("bd09ll"); // 设置坐标类型
-        option.setScanSpan(1000);
+        option.setScanSpan(3000);
         mLocClient.setLocOption(option);
         mLocClient.start();
         LogUtils.e("Map", "starting location ....");
         return view;
     }
 
+    @Override
+    public void onActivityCreated(@Nullable Bundle savedInstanceState) {
+        super.onActivityCreated(savedInstanceState);
+    }
 
     @Override
     public void onPause() {
@@ -113,6 +136,17 @@ public class MapFragment extends Fragment {
         mMapView.onResume();
         super.onResume();
     }
+
+    @Override
+    protected String getTAG() {
+        return "Map Fragment";
+    }
+
+    @Override
+    public boolean setDebug() {
+        return true;
+    }
+
 
     @Override
     public void onDestroy() {

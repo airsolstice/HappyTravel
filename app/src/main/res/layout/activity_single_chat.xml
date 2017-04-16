@@ -21,11 +21,19 @@
             android:padding="10dp"
             android:src="@mipmap/ic_empty" />
 
+        <ProgressBar
+            android:id="@+id/progress"
+            android:layout_width="50dp"
+            android:layout_height="match_parent"
+            android:layout_toLeftOf="@+id/lab_title"
+            android:padding="10dp" />
+
         <TextView
             android:id="@+id/lab_title"
-            android:layout_width="match_parent"
+            android:layout_width="wrap_content"
             android:layout_height="match_parent"
             android:gravity="center"
+            android:layout_centerInParent="true"
             android:text="Single Chat"
             android:textColor="@color/white"
             android:textSize="20sp"
@@ -59,6 +67,7 @@
 
 
     <ListView
+        android:id="@+id/log_list"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:divider="#ffffff"
