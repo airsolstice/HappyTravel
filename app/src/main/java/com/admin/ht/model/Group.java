@@ -1,5 +1,7 @@
 package com.admin.ht.model;
 
+import com.alibaba.fastjson.JSONObject;
+
 import java.util.List;
 
 /**
@@ -12,8 +14,14 @@ public class Group {
     private String groupId;
     /*分组名称*/
     private String groupName;
-    /*分组项目*/
+    /*分组成员*/
     private List<GroupItem> groupItems;
+
+    public Group(String groupId, String groupName){
+        this.groupId = groupId;
+        this.groupName = groupName;
+    }
+
 
     /*在群组列表中需要通过groupId来进入聊天群中*/
     public Group(String groupId, String groupName, List<GroupItem> groupItems) {
@@ -50,6 +58,11 @@ public class Group {
 
     public void setGroupItems(List<GroupItem> mItems) {
         this.groupItems = mItems;
+    }
+
+    @Override
+    public String toString() {
+        return JSONObject.toJSONString(this);
     }
 
 }

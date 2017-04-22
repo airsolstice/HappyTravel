@@ -12,6 +12,7 @@ import android.view.Window;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
+
 import com.admin.ht.IM.IMClientManager;
 import com.admin.ht.R;
 import com.admin.ht.base.BaseActivity;
@@ -21,6 +22,8 @@ import com.admin.ht.model.User;
 import com.admin.ht.retro.ApiClient;
 import com.admin.ht.utils.LogUtils;
 import com.admin.ht.widget.NoScrollViewPager;
+import com.baidu.mapapi.model.LatLng;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -85,6 +88,7 @@ public class HomeActivity extends BaseActivity {
 
         Fragment contact = new ContactFragment();
         Fragment map = new MapFragment();
+
         mFrgs.add(map);
         mFrgs.add(contact);
 
@@ -99,51 +103,6 @@ public class HomeActivity extends BaseActivity {
     @OnClick(R.id.contact)
     public void go2Contact() {
         mPager.setCurrentItem(1);
-
-        LogUtils.i(TAG, "starting retrofit");
-
-        ApiClient.service.getTrace("18140049361")
-        //ApiClient.service.updatePosition("18140049361", "40", "120")
-                //ApiClient.service.updatePosition(user.getId(), String.valueOf(ll.latitude), String.valueOf(ll.longitude))
-                .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(new Subscriber<Result>() {
-                    Result result = null;
-                    @Override
-                    public void onCompleted() {
-                        String str;
-                        if(result == null){
-                            str = "未知异常";
-                        } else if (result.getCode() == Constant.SUCCESS) {
-                            str = "更新成功";
-                        } else if (result.getCode() == Constant.FAIL) {
-                            str = "更新失败";
-                        } else if(result.getCode() == Constant.EXECUTING){
-                            str = "服务器繁忙";
-                        } else {
-                            str = "未知异常";
-                        }
-                        if(isDebug){
-                            LogUtils.i(TAG, str);
-                        }
-                    }
-
-                    @Override
-                    public void onNext(Result result) {
-                        if(isDebug){
-                            LogUtils.i(TAG, result.toString());
-                        }
-                        this.result = result;
-                    }
-
-                    @Override
-                    public void onError(Throwable e) {
-                        LogUtils.i(TAG, e.toString());
-                        e.printStackTrace();
-                    }
-                });
-
-
     }
 
     @OnClick(R.id.back)

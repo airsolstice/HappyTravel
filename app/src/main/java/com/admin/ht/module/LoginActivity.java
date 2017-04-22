@@ -102,6 +102,7 @@ public class LoginActivity extends BaseActivity {
         editor.putBoolean(IS_SAVED, mIsSaved.isChecked());
         editor.commit();
 
+
         loginInSvc();
     }
 

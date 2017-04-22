@@ -33,10 +33,11 @@ public class GsonRequestBodyConverter<T> implements Converter<T, RequestBody> {
 
     @Override
     public RequestBody convert(T value) throws IOException {
-        LogUtils.e("Convert", gson.toString()+",type= "+type.toString());
         Buffer buffer = new Buffer();
         Writer writer = new OutputStreamWriter(buffer.outputStream(), UTF_8);
         try {
+            LogUtils.e("Convert", "-------------------");
+            LogUtils.e("Convert", gson.toJson(String.class));
             gson.toJson(value, type, writer);
             writer.flush();
         } catch (IOException e) {
@@ -44,8 +45,5 @@ public class GsonRequestBodyConverter<T> implements Converter<T, RequestBody> {
         }
         return RequestBody.create(MEDIA_TYPE, buffer.readByteString());
     }
-
-
-
 
 }

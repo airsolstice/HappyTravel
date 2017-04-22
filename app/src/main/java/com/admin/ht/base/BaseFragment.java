@@ -31,6 +31,7 @@ public abstract class BaseFragment extends Fragment {
 
     protected SharedPreferences mPreferences = null;
 
+    protected User mUser = null;
     /**
      *
      * @param id
@@ -70,6 +71,7 @@ public abstract class BaseFragment extends Fragment {
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        mPreferences = getActivity().getSharedPreferences(BaseActivity.FILE_NAME, 0);
         if (isDebug) LogUtils.v(TAG, "onCreate");
     }
 
@@ -85,7 +87,6 @@ public abstract class BaseFragment extends Fragment {
     @Override
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
-        mPreferences = getActivity().getSharedPreferences(BaseActivity.FILE_NAME, 0);
         if (isDebug) LogUtils.v(TAG, "onActivityCreated");
     }
 

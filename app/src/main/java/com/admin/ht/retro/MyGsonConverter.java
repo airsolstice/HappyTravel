@@ -4,6 +4,7 @@ package com.admin.ht.retro;
  * Created by Spec_Inc on 4/16/2017.
  */
 
+import com.admin.ht.utils.LogUtils;
 import com.google.gson.Gson;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Type;
@@ -34,7 +35,7 @@ public class MyGsonConverter extends Converter.Factory {
     private final Gson gson;
 
     private MyGsonConverter(Gson gson) {
-        if (gson == null) throw new NullPointerException("gson == null");
+        if (gson == null) throw new NullPointerException("gson is null");
         this.gson = gson;
     }
 

@@ -1,5 +1,7 @@
 package com.admin.ht.model;
 
+import com.alibaba.fastjson.JSONObject;
+
 /**
  * Created by Spec_Inc on 3/5/2017.
  */
@@ -67,5 +69,10 @@ public class GroupItem {
 
     public void setNote(String note) {
         this.note = note;
+    }
+
+    @Override
+    public String toString() {
+        return JSONObject.toJSONString(this);
     }
 }

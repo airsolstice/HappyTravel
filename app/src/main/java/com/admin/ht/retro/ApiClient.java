@@ -33,16 +33,21 @@ public class ApiClient {
         Observable<Result> retrievePwd(@Field("id") String id, @Field("pwd") String pwd);
 
         @FormUrlEncoded
+        @POST("loc/update")
+        Observable<Result> updatePosition(@Field("id") String id, @Field("lat") String lat, @Field("lng") String lng);
+
+        @FormUrlEncoded
+        @POST("group/list")
+        Observable<Result> getGroupList(@Field("id") String id);
+
+        @FormUrlEncoded
         @POST("loc/trace")
         Observable<Result> getTrace(@Field("id") String id);
 
         @FormUrlEncoded
-        @POST("loc/update")
-        Observable<Result> updatePosition(@Field("id") String id, @Field("latStr") String lat, @Field("lngStr") String lng);
-
-        @FormUrlEncoded
         @PUT("user/loginOut")
         Observable<Result> loginOut(@Field("id") String id);
+
 
     }
 
