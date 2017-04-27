@@ -8,6 +8,7 @@ import android.os.Bundle;
 import android.support.annotation.RequiresApi;
 import android.support.v4.content.ContextCompat;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.Window;
@@ -16,6 +17,7 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.admin.ht.IM.IMClientManager;
 import com.admin.ht.R;
 import com.admin.ht.base.BaseActivity;
 import com.admin.ht.base.Constant;
@@ -26,14 +28,21 @@ import com.admin.ht.utils.LogUtils;
 import com.admin.ht.utils.NetUtils;
 import com.admin.ht.utils.StringUtils;
 import com.admin.ht.utils.ToastUtils;
-import com.google.gson.Gson;
+
+import net.openmob.mobileimsdk.android.ClientCoreSDK;
+import net.openmob.mobileimsdk.android.core.LocalUDPDataSender;
+import net.openmob.mobileimsdk.android.event.ChatBaseEvent;
+
+import java.util.Observable;
+import java.util.Observer;
+
 import butterknife.Bind;
 import butterknife.OnClick;
 import rx.Subscriber;
 import rx.android.schedulers.AndroidSchedulers;
 import rx.schedulers.Schedulers;
 
-public class LoginActivity extends BaseActivity {
+public class LoginActivity extends BaseActivity implements ChatBaseEvent{
 
     @Bind(R.id.phone)
     EditText mPhone;
@@ -48,6 +57,7 @@ public class LoginActivity extends BaseActivity {
     private long mExitTime;
     private String mPhoneStr;
     private String mPwdStr;
+    private Observer mObserver = null;
 
 
     @Override
@@ -120,8 +130,8 @@ public class LoginActivity extends BaseActivity {
                             str = "未知异常";
                         } else if (result.getCode() == Constant.SUCCESS) {
                             str = "正在加载地图组件";
-                            Gson gson = new Gson();
-                            User user = gson.fromJson(result.getModel().toString(), User.class);
+                            User user = ApiClient.gson.fromJson(result.getModel().toString(), User.class);
+                            loginIM(user.getId());
                             Intent intent = new Intent(LoginActivity.this, HomeActivity.class);
                             intent.putExtra(BaseActivity.USER, user);
                             startActivity(intent);
@@ -153,6 +163,47 @@ public class LoginActivity extends BaseActivity {
 
     }
 
+
+    private void loginIM(String id) {
+        //设置登入回调
+        ClientCoreSDK.getInstance().setChatBaseEvent(this);
+        //设置登入回调，如果设置了上一行，则此回调方法将被覆盖
+        mObserver = new Observer() {
+            @Override
+            public void update(Observable observable, Object data) {
+                // 服务端返回的登陆结果值
+                int code = (Integer) data;
+                // 登陆成功
+                if (code == 0) {
+                    int id = ClientCoreSDK.getInstance().getCurrentUserId();
+                    Log.d(TAG, "登陆成功！" + id);
+                }
+                else {
+                    Log.d(TAG, "登陆失败，错误码=" + code);
+                }
+            }
+        };
+        doLoginImpl(id, "hp");
+    }
+
+
+    private void doLoginImpl(final String targetId, final String pwd) {
+        IMClientManager.getInstance(this).getBaseEventListener()
+                .setLoginOkForLaunchObserver(mObserver);
+        // 异步提交登陆名和密码
+        new LocalUDPDataSender.SendLoginDataAsync(mContext, targetId, pwd) {
+            @Override
+            protected void fireAfterSendLogin(int code) {
+                if (code == 0) {
+                    Toast.makeText(mContext, "数据发送成功！", Toast.LENGTH_SHORT).show();
+                    Log.d(TAG, "登陆信息已成功发出！" + targetId + "-" + pwd);
+                } else {
+                    Toast.makeText(mContext, "数据发送失败。错误码是：" + code + "！",
+                            Toast.LENGTH_SHORT).show();
+                }
+            }
+        }.execute();
+    }
 
     @OnClick(R.id.network_tip)
     public void setNetwork() {
@@ -212,4 +263,17 @@ public class LoginActivity extends BaseActivity {
         return R.layout.activity_login;
     }
 
+    @Override
+    public void onLoginMessage(int dwUserId, int dwErrorCode) {
+        if (dwErrorCode == 0) {
+            Log.i(TAG, "登录成功，当前分配的user_id = " + dwUserId);
+        } else {
+            Log.e(TAG, "登录失败，错误代码：" + dwErrorCode);
+        }
+    }
+
+    @Override
+    public void onLinkCloseMessage(int dwErrorCode) {
+        Log.e(TAG, "网络连接出错关闭了，error：" + dwErrorCode);
+    }
 }

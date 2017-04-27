@@ -23,8 +23,16 @@ public class User implements Serializable{
 	//头像链接
 	private String url;
 
+	private double lat;
+
+	private double lng;
+
 	private String note;
+
+	private int chatId;
+
 	public User(){}
+
 
 	//用户个人信息获取
 	public User(String id, String name, String email, String url){
@@ -32,6 +40,15 @@ public class User implements Serializable{
 		this.name = name;
 		this.email = email;
 		this.url = url;
+	}
+
+	//用户个人信息获取
+	public User(String id, String name, String email, String url, int chatId){
+		this.id = id;
+		this.name = name;
+		this.email = email;
+		this.url = url;
+		this.chatId = chatId;
 	}
 	
 	public String getId() {
@@ -87,6 +104,28 @@ public class User implements Serializable{
 	}
 	public void setNote(String note) {
 		this.note = note;
+	}
+	public int getChatId() {
+		return chatId;
+	}
+	public void setChatId(int chatId) {
+		this.chatId = chatId;
+	}
+
+	public double getLat() {
+		return lat;
+	}
+
+	public void setLat(double lat) {
+		this.lat = lat;
+	}
+
+	public double getLng() {
+		return lng;
+	}
+
+	public void setLng(double lng) {
+		this.lng = lng;
 	}
 
 	@Override

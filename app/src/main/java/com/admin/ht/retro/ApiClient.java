@@ -4,9 +4,11 @@ import com.admin.ht.model.Result;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
+import java.util.concurrent.TimeUnit;
+
+import okhttp3.OkHttpClient;
 import retrofit2.Retrofit;
 import retrofit2.adapter.rxjava.RxJavaCallAdapterFactory;
-import retrofit2.converter.gson.GsonConverterFactory;
 import retrofit2.http.Field;
 import retrofit2.http.FormUrlEncoded;
 import retrofit2.http.POST;
@@ -41,6 +43,18 @@ public class ApiClient {
         Observable<Result> getGroupList(@Field("id") String id);
 
         @FormUrlEncoded
+        @POST("user/info/get")
+        Observable<Result> getUserInfo(@Field("id") String id);
+
+        @FormUrlEncoded
+        @POST("user/info/bychatid/get")
+        Observable<Result> getUserInfoByChatId(@Field("chatId") int chatId);
+
+        @FormUrlEncoded
+        @POST("user/chatid/get")
+        Observable<Result> getChatId(@Field("id") String id);
+
+        @FormUrlEncoded
         @POST("loc/trace")
         Observable<Result> getTrace(@Field("id") String id);
 
@@ -59,7 +73,13 @@ public class ApiClient {
             .disableHtmlEscaping() //默认是GSON把HTML 转义的
             .create();
 
+
+    public static OkHttpClient client = new OkHttpClient.Builder()
+            .connectTimeout(5, TimeUnit.SECONDS)
+            .build();
+
     public static Retrofit retrofit = new Retrofit.Builder()
+            .client(client)
             .baseUrl("http://192.168.2.227:8080/frame-study-demo/")//这里最后面必须能带“/”
             //.addConverterFactory(GsonConverterFactory.create(gson))//设置将json解析为javabean所用的方式
             .addConverterFactory(MyGsonConverter.create(gson))

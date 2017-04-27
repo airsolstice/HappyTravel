@@ -24,16 +24,13 @@ public class ChatBaseEventImpl implements ChatBaseEvent {
 
     private SingleChatActivity mainGUI = null;
 
-    // 本Observer目前仅用于登陆时（因为登陆与收到服务端的登陆验证结果
-    // 是异步的，所以有此观察者来完成收到验证后的处理）
     private Observer loginOkForLaunchObserver = null;
 
     @Override
     public void onLoginMessage(int dwUserId, int dwErrorCode) {
         if (dwErrorCode == 0) {
-            Log.i(TAG, "登录成功，当前分配的user_id=！" + dwUserId);
+            Log.i(TAG, "登录成功，当前分配的user_id=" + dwUserId);
 
-            // TODO 以下代码仅用于DEMO哦
             if (this.mainGUI != null) {
                 //this.mainGUI.refreshMyid();
                 //this.mainGUI.showIMInfo_green("登录成功,id="+dwUserId);
@@ -41,7 +38,6 @@ public class ChatBaseEventImpl implements ChatBaseEvent {
         } else {
             Log.e(TAG, "登录失败，错误代码：" + dwErrorCode);
 
-            // TODO 以下代码仅用于DEMO哦
             if (this.mainGUI != null) {
                 //this.mainGUI.refreshMyid();
                 //this.mainGUI.showIMInfo_red("登录失败,code="+dwErrorCode);
@@ -59,7 +55,6 @@ public class ChatBaseEventImpl implements ChatBaseEvent {
     public void onLinkCloseMessage(int dwErrorCode) {
         Log.e(TAG, "网络连接出错关闭了，error：" + dwErrorCode);
 
-        // TODO 以下代码仅用于DEMO哦
         if (this.mainGUI != null) {
 
         }

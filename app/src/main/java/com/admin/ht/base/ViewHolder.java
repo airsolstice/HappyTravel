@@ -10,6 +10,10 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.admin.ht.utils.BitmapUtils;
+import com.admin.ht.utils.ImageUtils;
+import com.nostra13.universalimageloader.core.ImageLoader;
+import com.nostra13.universalimageloader.core.assist.ImageSize;
+import com.nostra13.universalimageloader.core.listener.SimpleImageLoadingListener;
 
 
 /**
@@ -110,15 +114,16 @@ public class ViewHolder {
 
     public ViewHolder setImageURL(int viewId, final String url) {
         final ImageView mImg = getView(viewId);
-        //Bitmap bitmap = ImageLoader.getInstance.loading(url);
-        //mImg.setImageBitmap(bitmap);
-
-        //ImageLoaderSample loader = new ImageLoaderSample(mContext);
-        //loader.DisplayImage(url,mImg);
-
-       // ImageLoader loader = new ImageLoader(mContext);
-       // loader.display(mImg, url);
-
+        int rw = mImg.getMeasuredWidth();
+        int rh = mImg.getMeasuredHeight();
+        ImageSize targetSize = new ImageSize(rw, rh); // result Bitmap will be fit to this size
+        ImageLoader.getInstance().loadImage(url, targetSize, ImageUtils.getDisplayImageOptions(),
+                new SimpleImageLoadingListener() {
+            @Override
+            public void onLoadingComplete(String imageUri, View view, Bitmap loadedImage) {
+                mImg.setImageBitmap(loadedImage);
+            }
+        });
         return this;
     }
 

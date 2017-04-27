@@ -220,7 +220,6 @@ public class MapFragment extends BaseFragment {
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        //get group list data
         getGroupSvc();
     }
 

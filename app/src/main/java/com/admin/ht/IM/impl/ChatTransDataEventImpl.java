@@ -13,7 +13,9 @@ package com.admin.ht.IM.impl;
 
 import android.util.Log;
 
+import com.admin.ht.base.BaseActivity;
 import com.admin.ht.model.ChatLog;
+import com.admin.ht.model.User;
 import com.admin.ht.module.SingleChatActivity;
 
 import net.openmob.mobileimsdk.android.event.ChatTransDataEvent;
@@ -21,24 +23,11 @@ import net.openmob.mobileimsdk.android.event.ChatTransDataEvent;
 public class ChatTransDataEventImpl implements ChatTransDataEvent {
     private final static String TAG = ChatTransDataEventImpl.class.getSimpleName();
 
-    private SingleChatActivity GUI = null;
-
     @Override
     public void onTransBuffer(String fingerPrintOfProtocol, int userId, String content) {
         Log.d(TAG, "收到来自用户" + userId + "的消息:" + content+","+fingerPrintOfProtocol);
-
-        if (GUI != null) {
-            ChatLog log = new ChatLog();
-            log.setContent(content);
-            log.setId(userId + "");
-            GUI.addLog(log);
-        }
     }
 
-    public ChatTransDataEventImpl setGUI(SingleChatActivity GUI) {
-        this.GUI = GUI;
-        return this;
-    }
 
     @Override
     public void onErrorResponse(int errorCode, String errorMsg) {

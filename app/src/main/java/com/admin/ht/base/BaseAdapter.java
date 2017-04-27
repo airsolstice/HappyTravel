@@ -4,7 +4,6 @@ import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-
 import java.util.List;
 
 
@@ -18,9 +17,9 @@ public abstract  class BaseAdapter<T> extends android.widget.BaseAdapter
     protected List<T> mData;
     protected LayoutInflater mInflater;
 
-    public BaseAdapter(Context context, List<T> datas){
+    public BaseAdapter(Context context, List<T> data){
         this.mContext = context;
-        this.mData = datas;
+        this.mData = data;
         mInflater = LayoutInflater.from(mContext);
     }
 
@@ -52,7 +51,6 @@ public abstract  class BaseAdapter<T> extends android.widget.BaseAdapter
 
         return mHolder.getConvertView();
     }
-
 
     public abstract void convert(ViewHolder holder,T t);
 

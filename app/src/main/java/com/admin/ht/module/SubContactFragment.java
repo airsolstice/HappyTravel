@@ -1,19 +1,20 @@
 package com.admin.ht.module;
 
 import android.app.Activity;
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ListView;
+import android.widget.ExpandableListView;
 
 import com.admin.ht.R;
-import com.admin.ht.adapter.GroupViewAdapter;
+import com.admin.ht.adapter.ExpandAdapter;
+import com.admin.ht.base.BaseActivity;
 import com.admin.ht.base.BaseFragment;
 import com.admin.ht.base.Constant;
-import com.admin.ht.model.Group;
-import com.admin.ht.model.GroupItem;
+import com.admin.ht.model.Item;
 import com.admin.ht.model.Result;
 import com.admin.ht.model.UnsortedGroup;
 import com.admin.ht.retro.ApiClient;
@@ -30,19 +31,12 @@ import rx.schedulers.Schedulers;
  * Created by Spec_Inc on 3/4/2017.
  */
 
-public class SubContactFragment extends BaseFragment {
+public class SubContactFragment extends BaseFragment implements ExpandableListView.OnChildClickListener {
 
-
-    @Override
-    protected String getTAG() {
-        return "Sub Contact";
-    }
-
-    @Override
-    public boolean setDebug() {
-        return true;
-    }
-
+    private ExpandableListView mListView = null;
+    private ExpandAdapter mAdapter = null;
+    private List<List<Item>> mData = new ArrayList<>();
+    private List<String> mGroups = new ArrayList<>();
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
@@ -62,7 +56,30 @@ public class SubContactFragment extends BaseFragment {
         }
 
         View v = inflater.inflate(R.layout.layout_contact, null);
-        final ListView list = (ListView) v.findViewById(R.id.fri_list);
+        mListView = (ExpandableListView) v.findViewById(R.id.fri_list);
+        //设置群组指针
+        //mListView.setGroupIndicator(getResources().getDrawable(R.drawable.expander_floder));
+        mListView.setDescendantFocusability(ExpandableListView.FOCUS_AFTER_DESCENDANTS);
+        mListView.setOnChildClickListener(this);
+
+        getGroupListSvc();
+        return v;
+    }
+
+
+    @Override
+    public boolean onChildClick(ExpandableListView parent, View v, int groupPosition, int childPosition, long id) {
+        final Item item = mAdapter.getChild(groupPosition, childPosition);
+
+        Intent intent = new Intent(getActivity(), SingleChatActivity.class);
+        intent.putExtra(BaseActivity.TARGET_USER, item);
+        getActivity().startActivity(intent);
+
+        return true;
+    }
+
+
+    private void getGroupListSvc() {
 
         ApiClient.service.getGroupList(mUser.getId())
                 .subscribeOn(Schedulers.newThread())
@@ -78,31 +95,27 @@ public class SubContactFragment extends BaseFragment {
                             str = "未知异常";
                         } else if (result.getCode() == Constant.SUCCESS) {
                             str = "获取群组列表";
+                            mData.clear();
                             Gson gson = new Gson();
                             UnsortedGroup[] unsortedGroup = gson.fromJson(result.getModel().toString(), UnsortedGroup[].class);
-
                             ArrayList<UnsortedGroup> ls = new ArrayList<>();
                             for (UnsortedGroup ug : unsortedGroup) {
                                 ls.add(ug);
                             }
 
-                            final List<Group> groups = new ArrayList<>();
-
                             for (int i = 0; i < ls.size(); i++) {
                                 if (ls.get(i) == null) {
                                     continue;
                                 }
-
                                 UnsortedGroup ug = ls.get(i);
-                                Group group = new Group(i + 1 + "", ug.getGroupName());
-                                List<GroupItem> items = new ArrayList<>();
+                                mGroups.add(ug.getGroupName());
+                                List<Item> items = new ArrayList<>();
 
-                                GroupItem item = new GroupItem();
+                                Item item = new Item();
                                 item.setId(ug.getFid());
-
-                                item.setName("user" + i);
-                                item.setNote("note" + i);
-                                item.setStatus(1);
+                                item.setName("user");
+                                item.setNote("......");
+                                item.setStatus(0);
                                 item.setUrl("http://");
                                 items.add(item);
 
@@ -112,10 +125,11 @@ public class SubContactFragment extends BaseFragment {
                                         continue;
                                     }
 
-                                    if (group.getGroupName().equals(ls.get(j).getGroupName())) {
+                                    if (ug.getGroupName().equals(ls.get(j).getGroupName())) {
+                                        item = new Item();
                                         item.setId(ls.get(j).getFid());
                                         item.setName("user");
-                                        item.setNote("");
+                                        item.setNote("......");
                                         item.setStatus(1);
                                         item.setUrl("http://");
                                         items.add(item);
@@ -123,16 +137,15 @@ public class SubContactFragment extends BaseFragment {
                                     }
                                 }
 
-                                group.setGroupItems(items);
-                                groups.add(group);
+                                mData.add(items);
                             }
 
                             Activity a = getActivity();
                             a.runOnUiThread(new Runnable() {
                                 @Override
                                 public void run() {
-                                    GroupViewAdapter adapter = new GroupViewAdapter(getContext(), getGroupData());
-                                    list.setAdapter(adapter);
+                                    mAdapter = new ExpandAdapter(getActivity(), mGroups, mData);
+                                    mListView.setAdapter(mAdapter);
                                 }
                             });
 
@@ -165,49 +178,21 @@ public class SubContactFragment extends BaseFragment {
                         e.printStackTrace();
                     }
                 });
-
-
-        getGroupData();
-        return v;
     }
 
-    private List<Group> getGroupData() {
 
-        List<Group> groups = new ArrayList<>();
-        List<GroupItem> items1 = new ArrayList<>();
-
-        String url = "https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=" +
-                "1488723551780&di=9ac9726620e9f72d6e473ab97e847be0&imgtype=0" +
-                "&src=http%3A%2F%2Fimg.qqai.net%2Fuploads%2Fi_1_3783854548x2374077175_21.jpg";
-
-        for (int i = 0; i < 5; i++) {
-            GroupItem item = new GroupItem("100" + i, "friend" + i, url, 1, "note" + i);
-            items1.add(item);
-        }
-        Group group1 = new Group("好友", items1);
-        groups.add(group1);
-
-        List<GroupItem> items2 = new ArrayList<>();
-
-        for (int i = 0; i < 5; i++) {
-            GroupItem item = new GroupItem("100" + i, "family" + i, url, 1, "note" + i);
-            items2.add(item);
-        }
-        Group group2 = new Group("家人", items2);
-        groups.add(group2);
-
-
-        List<GroupItem> items3 = new ArrayList<>();
-        for (int i = 0; i < 5; i++) {
-            GroupItem item = new GroupItem("100" + i, "workmate" + i, url, 1, "note" + i);
-            items3.add(item);
-        }
-        Group group3 = new Group("同事", items3);
-        groups.add(group3);
-
-        return groups;
-
+    @Override
+    protected String getTAG() {
+        return "Sub Contact";
     }
+
+    @Override
+    public boolean setDebug() {
+        return true;
+    }
+
+
+
 }
 
 

@@ -13,8 +13,6 @@ package com.admin.ht.IM.impl;
 
 import android.util.Log;
 
-import com.admin.ht.module.SingleChatActivity;
-
 import net.openmob.mobileimsdk.android.event.MessageQoSEvent;
 import net.openmob.mobileimsdk.server.protocal.Protocal;
 
@@ -23,28 +21,15 @@ import java.util.ArrayList;
 public class MessageQoSEventImpl implements MessageQoSEvent {
     private final static String TAG = MessageQoSEventImpl.class.getSimpleName();
 
-    private SingleChatActivity mainGUI = null;
-
     @Override
     public void messagesLost(ArrayList<Protocal> lostMessages) {
         Log.d(TAG, "收到系统的未实时送达事件通知，当前共有" + lostMessages.size() + "个包QoS保证机制结束，判定为【无法实时送达】！");
-
-        if (this.mainGUI != null) {
-        }
     }
 
     @Override
     public void messagesBeReceived(String theFingerPrint) {
         if (theFingerPrint != null) {
             Log.d(TAG, "收到对方已收到消息事件的通知，fp=" + theFingerPrint);
-            if (this.mainGUI != null) {
-
-            }
         }
-    }
-
-    public MessageQoSEventImpl setMainGUI(SingleChatActivity mainGUI) {
-        this.mainGUI = mainGUI;
-        return this;
     }
 }

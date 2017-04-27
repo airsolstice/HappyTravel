@@ -24,6 +24,7 @@ public class WelcomeActivity extends BaseActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         setFullScreen();
+
         super.onCreate(savedInstanceState);
         initAnimation();
 

@@ -1,5 +1,6 @@
 package com.admin.ht.module;
 
+import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.RequiresApi;
@@ -7,11 +8,14 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentStatePagerAdapter;
 import android.support.v4.view.ViewPager;
+import android.util.Log;
+import android.view.KeyEvent;
 import android.view.View;
 import android.view.Window;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.admin.ht.IM.IMClientManager;
 import com.admin.ht.R;
@@ -23,6 +27,8 @@ import com.admin.ht.retro.ApiClient;
 import com.admin.ht.utils.LogUtils;
 import com.admin.ht.widget.NoScrollViewPager;
 import com.baidu.mapapi.model.LatLng;
+
+import net.openmob.mobileimsdk.android.core.LocalUDPDataSender;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -51,6 +57,8 @@ public class HomeActivity extends BaseActivity {
     TextView mTitle;
 
     private List<Fragment> mFrgs = new ArrayList<>();
+
+    private  long mExitTime ;
 
     @Override
     protected String getTAG() {
@@ -83,12 +91,11 @@ public class HomeActivity extends BaseActivity {
             if (isDebug){
                 LogUtils.e(TAG, user.toString());
             }
-            putUser(user.getId(),user.getName(),user.getEmail(),user.getUrl());
+            putUser(user);
         }
 
         Fragment contact = new ContactFragment();
         Fragment map = new MapFragment();
-
         mFrgs.add(map);
         mFrgs.add(contact);
 
@@ -96,7 +103,7 @@ public class HomeActivity extends BaseActivity {
         mPager.setAdapter(adapter);
         mPager.setCurrentItem(0);
         mPager.setNoScroll(true);
-        //mPager.setOffscreenPageLimit(4);
+        mPager.setOffscreenPageLimit(4);
         mPager.addOnPageChangeListener(adapter);
     }
 
@@ -163,6 +170,25 @@ public class HomeActivity extends BaseActivity {
         @Override
         public void onPageScrollStateChanged(int state) {
         }
+    }
+
+
+
+    @Override
+    public boolean onKeyDown(int keyCode, KeyEvent event) {
+        if (keyCode == KeyEvent.KEYCODE_BACK) {
+            if ((System.currentTimeMillis() - mExitTime) > 2000) {//
+                // 如果两次按键时间间隔大于2000毫秒，则不退出
+                Toast.makeText(this, "再按一次退出程序", Toast.LENGTH_SHORT).show();
+                mExitTime = System.currentTimeMillis();// 更新mExitTime
+            } else {
+                mApplication.exit();
+                System.exit(0);// 否则退出程序
+            }
+            return true;
+        }
+        return super.onKeyDown(keyCode, event);
+
     }
 
 

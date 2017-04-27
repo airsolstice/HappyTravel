@@ -1,11 +1,13 @@
 package com.admin.ht.model;
 
-import com.alibaba.fastjson.JSONObject;
+import java.io.Serializable;
 
 /**
- * Created by Spec_Inc on 3/5/2017.
+ * Created by Spec_Inc on 4/22/2017.
  */
-public class GroupItem {
+
+public class Item implements Serializable{
+
 
     /*好友id，主键*/
     private String id;
@@ -17,18 +19,8 @@ public class GroupItem {
     private int status;
     /*好友说明*/
     private String note;
-    /*好友所在分组id*/
 
-    public GroupItem(){
-
-    }
-
-    public GroupItem(String id, String name, String url, int status, String note) {
-        this.id = id;
-        this.name = name;
-        this.url = url;
-        this.status = status;
-        this.note = note;
+    public Item() {
     }
 
     public String getId() {
@@ -69,10 +61,5 @@ public class GroupItem {
 
     public void setNote(String note) {
         this.note = note;
-    }
-
-    @Override
-    public String toString() {
-        return JSONObject.toJSONString(this);
     }
 }

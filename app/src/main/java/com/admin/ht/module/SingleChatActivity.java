@@ -1,48 +1,48 @@
 package com.admin.ht.module;
 
-import android.app.AlertDialog;
-import android.os.AsyncTask;
 import android.os.Bundle;
-import android.text.TextUtils;
 import android.util.Log;
-import android.view.View;
 import android.view.Window;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.ListView;
-import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
-
-import com.admin.ht.IM.IMClientManager;
 import com.admin.ht.R;
 import com.admin.ht.adapter.ChatLogAdapter;
 import com.admin.ht.base.BaseActivity;
+import com.admin.ht.base.Constant;
+import com.admin.ht.db.ChatLogHelper;
 import com.admin.ht.model.ChatLog;
-import com.admin.ht.utils.NetUtils;
-
+import com.admin.ht.model.Item;
+import com.admin.ht.model.Result;
+import com.admin.ht.model.User;
+import com.admin.ht.retro.ApiClient;
+import com.admin.ht.utils.LogUtils;
 import net.openmob.mobileimsdk.android.ClientCoreSDK;
 import net.openmob.mobileimsdk.android.core.LocalUDPDataSender;
-
+import net.openmob.mobileimsdk.android.event.ChatTransDataEvent;
+import net.openmob.mobileimsdk.android.event.MessageQoSEvent;
+import net.openmob.mobileimsdk.server.protocal.Protocal;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
-import java.util.Observable;
-import java.util.Observer;
-
 import butterknife.Bind;
 import butterknife.OnClick;
+import rx.Subscriber;
+import rx.android.schedulers.AndroidSchedulers;
+import rx.schedulers.Schedulers;
 
 
-public class SingleChatActivity extends BaseActivity {
-
-    private Observer mObserver = null;
+public class SingleChatActivity extends BaseActivity implements ChatTransDataEvent, MessageQoSEvent {
 
     private List<ChatLog> mLogData = new ArrayList<>();
 
-    ChatLogAdapter mLogAdapter = null;
+    private ChatLogAdapter mAdapter = null;
 
-    @Bind(R.id.progress)
-    ProgressBar mBar;
+    private User mTargetUser;
+
+    private User mHolderUser;
 
     @Bind(R.id.send)
     ImageView mSend;
@@ -56,8 +56,6 @@ public class SingleChatActivity extends BaseActivity {
     @Bind(R.id.edit_text)
     EditText mEdit;
 
-    @Bind(R.id.edit_to)
-    EditText mEditTo;
 
     @Override
     protected String getTAG() {
@@ -71,7 +69,7 @@ public class SingleChatActivity extends BaseActivity {
 
     @Override
     public boolean setDebug() {
-        return false;
+        return true;
     }
 
     @Override
@@ -83,178 +81,174 @@ public class SingleChatActivity extends BaseActivity {
     protected void onCreate(Bundle savedInstanceState) {
         requestWindowFeature(Window.FEATURE_NO_TITLE);
         super.onCreate(savedInstanceState);
+        Item item = (Item) getIntent().getExtras().getSerializable(TARGET_USER);
+        mTargetUser = new User();
+        mTargetUser.setId(item.getId());
+        mTargetUser.setName(item.getName());
+        mTargetUser.setNote(item.getNote());
+        mTargetUser.setUrl(item.getUrl());
+        mTargetUser.setStatus(item.getStatus());
+        mTargetUser.setChatId(-1);
+        mHolderUser = getUser();
 
-        initLogin();
-        mLogAdapter = new ChatLogAdapter(mContext, mLogData);
-        mLog.setAdapter(mLogAdapter);
+        if (isDebug) {
+            Log.d(TAG, "目标用户=" + mTargetUser.getId());
+        }
 
+        mTitle.setText(mTargetUser.getId());
+        initIMListener();
+
+        List<ChatLog> result = ChatLogHelper.queryById(mTargetUser.getId());
+        mLogData.addAll(result);
+        mAdapter = new ChatLogAdapter(mContext, mLogData);
+        //mAdapter = new SimpleChatLogAdapter(mContext, mLogData);
+        mLog.setAdapter(mAdapter);
+        //移动到尾部
+        mLog.smoothScrollToPosition(mLog.getCount() - 1);
+    }
+
+    @OnClick(R.id.back)
+    public void back() {
+        finish();
     }
 
     @OnClick(R.id.send)
     public void sendMsg() {
+        if (mTargetUser.getChatId() == -1) {
+            Toast.makeText(mContext, "目标用户的chat_id还未获取，轻稍后重新发送", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
         final String msg = mEdit.getText().toString().trim();
         if (msg.length() > 0) {
-            int friendId = Integer.parseInt(mEditTo.getText().toString().trim());
-
-            // 发送消息（Android系统要求必须要在独立的线程中发送哦）
-            new LocalUDPDataSender.SendCommonDataAsync(mContext, msg, friendId, true) {
+            new LocalUDPDataSender.SendCommonDataAsync(mContext, msg, mTargetUser.getChatId(), true) {
                 @Override
                 protected void onPostExecute(Integer code) {
                     if (code == 0) {
                         Log.d(TAG, "数据已成功发出！");
                         ChatLog log = new ChatLog();
+                        log.setName("我" + "(" + mHolderUser.getChatId() + "):");
                         log.setContent(msg);
+                        log.setUrl(mHolderUser.getUrl());
+                        log.setType(1);
                         addLog(log);
                     } else
-                        Toast.makeText(getApplicationContext(), "数据发送失败。错误码是：" + code + "！", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(mContext, "数据发送失败。错误码是：" + code + "！", Toast.LENGTH_SHORT).show();
                 }
             }.execute();
         } else
             Log.e(TAG, "len=" + (msg.length()));
 
+        mEdit.setText("");
     }
 
     public void addLog(ChatLog log) {
+        ChatLogHelper.insert(log);
+        List<ChatLog> result = ChatLogHelper.queryAll();
+        LogUtils.d(TAG, "数据记录长度增到[" + result.size() + "]");
+
         mLogData.add(log);
-        mLogAdapter.notifyDataSetChanged();
+        mAdapter.notifyDataSetChanged();
+        //移动到尾部
+        mLog.smoothScrollToPosition(mLog.getCount() - 1);
     }
 
 
-    private void initLogin() {
-        Log.d(TAG, "初始化");
-
-        IMClientManager.getInstance(this).getTransDataListener().setGUI(this);
-        IMClientManager.getInstance(this).getBaseEventListener().setMainGUI(this);
-        IMClientManager.getInstance(this).getMessageQoSListener().setMainGUI(this);
-        mObserver = new Observer() {
-            @Override
-            public void update(Observable observable, Object data) {
-                // 服务端返回的登陆结果值
-                int code = (Integer) data;
-                // 登陆成功
-                if (code == 0) {
-                    //startActivity(new Intent(mContext, HomeActivity.class));
-                    int mId = ClientCoreSDK.getInstance().getCurrentUserId();
-                    Log.d(TAG, "登陆成功！" + mId);
-                    mBar.setVisibility(View.GONE);
-                    mSend.setClickable(true);
-                }
-                // 登陆失败
-                else {
-                    new AlertDialog.Builder(mContext)
-                            .setTitle("友情提示")
-                            .setMessage("Sorry，登陆失败，错误码=" + code)
-                            .setPositiveButton("知道了", null)
-                            .show();
-                }
-            }
-        };
-
-
-        mSend.setClickable(false);
-        String id = getIntent().getStringExtra(BaseActivity.CHAT2WHO);
-        // mTitle.setText(id);
-        doLogin(id);
+    public User getTargetUser() {
+        return mTargetUser;
     }
 
+    private void initIMListener() {
+        getTargetChatId(mTargetUser.getId());
+        ClientCoreSDK.getInstance().setChatTransDataEvent(this);
+        ClientCoreSDK.getInstance().setMessageQoSEvent(this);
 
-    /**
-     * 登陆处理。
-     */
-
-    public void doLogin(String id) {
-        if (!NetUtils.isWifi(mContext) && !NetUtils.isConnected(mContext)) {
-            return;
-        }
-
-        //从服务器映射响应的聊天服务id --- 异步任务处理
-        String chatId = getChatId(id);
-
-        // 发送登陆数据包
-        if (id != null && id.length() > 0) {
-            doLoginImpl(chatId, "123");
-        }
     }
 
-    /**
-     * 真正的登陆信息发送实现方法。
-     */
-    private void doLoginImpl(final String chatId, final String pwd) {
-        // 设置好服务端反馈的登陆结果观察者（当客户端收到服务端反馈过来的登陆消息时将被通知）
-        IMClientManager.getInstance(this).getBaseEventListener()
-                .setLoginOkForLaunchObserver(mObserver);
+    private void getTargetChatId(String id) {
+        ApiClient.service.getUserInfo(id)
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(new Subscriber<Result>() {
+                    Result result = null;
 
-        // 异步提交登陆名和密码
-        new LocalUDPDataSender.SendLoginDataAsync(
-                mContext
-                , chatId
-                , pwd) {
-            /**
-             * 登陆信息发送完成后将调用本方法（注意：此处仅是登陆信息发送完成
-             * ，真正的登陆结果要在异步回调中处理哦）。
-             *
-             * @param code 数据发送返回码，0 表示数据成功发出，否则是错误码
-             */
-            @Override
-            protected void fireAfterSendLogin(int code) {
-                if (code == 0) {
-                    Toast.makeText(getApplicationContext(), "数据发送成功！", Toast.LENGTH_SHORT).show();
-                    Log.d(TAG, "登陆信息已成功发出！" + chatId + "-" + pwd);
-                } else {
-                    Toast.makeText(getApplicationContext(), "数据发送失败。错误码是：" + code + "！", Toast.LENGTH_SHORT).show();
-                }
-            }
-        }.execute();
-    }
+                    @Override
+                    public void onCompleted() {
+                        String str;
+                        if (result == null) {
+                            str = "未知异常";
+                        } else if (result.getCode() == Constant.SUCCESS) {
+                            str = "获取目标用户的信息";
+                            mTargetUser = ApiClient.gson.fromJson(result.getModel().toString(), User.class);
+                        } else if (result.getCode() == Constant.FAIL) {
+                            str = "更新失败";
+                        } else if (result.getCode() == Constant.EXECUTING) {
+                            str = "服务器繁忙";
+                        } else {
+                            str = "未知异常";
+                        }
 
+                        if (isDebug) {
+                            LogUtils.i(TAG, str);
+                        }
+                    }
 
-    private String getChatId(String chat2id) {
-        if (TextUtils.isEmpty(chat2id)) {
-            return null;
-        }
-        //访问服务器，获取好友id对应的聊天id，此处暂定为10000
-        return "18099";
-    }
+                    @Override
+                    public void onNext(Result result) {
+                        this.result = result;
+                        if (isDebug) {
+                            LogUtils.i(TAG, result.toString());
+                        }
+                    }
 
-    private void doLogout() {
-        // 发出退出登陆请求包（Android系统要求必须要在独立的线程中发送哦）
-        new AsyncTask<Object, Integer, Integer>() {
-            @Override
-            protected Integer doInBackground(Object... params) {
-                int code = -1;
-                try {
-                    code = LocalUDPDataSender.getInstance(mContext).sendLoginout();
-                } catch (Exception e) {
-                    Log.w(TAG, e);
-                }
-
-                return code;
-            }
-
-            @Override
-            protected void onPostExecute(Integer code) {
-                if (code == 0)
-                    Log.d(TAG, "注销登陆请求已完成！");
-                else
-                    Toast.makeText(getApplicationContext(), "注销登陆请求发送失败。错误码是：" + code + "！", Toast.LENGTH_SHORT).show();
-            }
-        }.execute();
+                    @Override
+                    public void onError(Throwable e) {
+                        if (isDebug) {
+                            LogUtils.i(TAG, e.toString());
+                        }
+                        e.printStackTrace();
+                    }
+                });
     }
 
 
     @Override
-    public void onBackPressed() {
-        super.onBackPressed();
-        // ** 注意：Android程序要么就别处理，要处理就一定
-        //			要退干净，否则会有意想不到的问题哦！
-        // 退出登陆
-        doLogout();
+    public void onTransBuffer(String fingerPrintOfProtocol, int userId, String content) {
+        Log.d(TAG, "收到来自用户[" + userId + "]的消息:" + content + "," + fingerPrintOfProtocol);
+        ChatLog log = new ChatLog();
+        log.setContent(content);
+        log.setUrl(BaseActivity.USER_DEFAULT_HEAD_URL);
+        log.setName(userId + "");
+        log.setType(2);
+        User user = this.getTargetUser();
+        if (user != null) {
+            log.setNo(user.getChatId());
+            log.setName(user.getName()+"("+user.getId()+")");
+            log.setContent(content);
+            log.setType(2);
+            log.setDate(new Date(System.currentTimeMillis()));
+            log.setUrl(user.getUrl());
+        }
+        addLog(log);
     }
 
-    protected void onDestroy() {
-
-        super.onDestroy();
+    @Override
+    public void onErrorResponse(int errorCode, String errorMsg) {
+        Log.d(TAG, "收到服务端错误消息，errorCode=" + errorCode + ", errorMsg=" + errorMsg);
     }
+
+    @Override
+    public void messagesLost(ArrayList<Protocal> lostMessages) {
+        Log.d(TAG, "收到系统的未实时送达事件通知，当前共有" + lostMessages.size() + "个包QoS保证机制结束，判定为【无法实时送达】！");
+    }
+
+    @Override
+    public void messagesBeReceived(String theFingerPrint) {
+        if (theFingerPrint != null) {
+            Log.d(TAG, "收到对方已收到消息事件的通知，fp=" + theFingerPrint);
+        }
+    }
+
 
 
 }
