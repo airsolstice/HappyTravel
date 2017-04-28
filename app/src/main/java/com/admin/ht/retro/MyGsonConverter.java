@@ -1,8 +1,6 @@
 package com.admin.ht.retro;
 
-/**
- * Created by Spec_Inc on 4/16/2017.
- */
+
 
 import com.admin.ht.utils.LogUtils;
 import com.google.gson.Gson;
@@ -14,14 +12,9 @@ import okhttp3.ResponseBody;
 import retrofit2.Converter;
 import retrofit2.Retrofit;
 
-
 /**
- * ClassName MyGsonConverter
- * Description
- * Company
- * author  youxuan  E-mail:xuanyouwu@163.com
- * date createTime：2015/12/24 12:39
- * version
+ * 
+ * Created by Spec_Inc on 4/16/2017.
  */
 public class MyGsonConverter extends Converter.Factory {
     public static MyGsonConverter create() {
