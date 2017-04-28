@@ -20,9 +20,9 @@ import rx.Observable;
  */
 public class ApiClient {
     /**
-	 * 服务地址：192.168.2.227
+     * 服务地址：192.168.2.227
      * 端口：8080
-	 */
+     */
     public interface ApiService {
         /* 登入 */
         @FormUrlEncoded
@@ -67,8 +67,8 @@ public class ApiClient {
     }
 
     /**
-	 * Gson配置对象
-	 */
+     * Gson配置对象
+     */
     public static Gson gson = new GsonBuilder()
             .setLenient()
             .enableComplexMapKeySerialization()//支持Map的key为复杂对象的形式
@@ -78,15 +78,15 @@ public class ApiClient {
             .create();
 
     /**
-	 * OKClient代理对象
-	 */
+     * OKClient代理对象
+     */
     public static OkHttpClient client = new OkHttpClient.Builder()
             .connectTimeout(5, TimeUnit.SECONDS)
             .build();
 
     /**
-	 * Retrofit单例对象
-	 */
+     * Retrofit单例对象
+     */
     public static Retrofit retrofit = new Retrofit.Builder()
             //设置OKClement代理
             .client(client)
@@ -101,8 +101,8 @@ public class ApiClient {
             .build();
 
     /**
-	 * API调用入口
-	 */
+     * API调用入口
+     */
     public static ApiClient.ApiService service =
             retrofit.create(ApiClient.ApiService.class);
 }
