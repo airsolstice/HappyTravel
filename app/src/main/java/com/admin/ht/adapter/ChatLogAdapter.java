@@ -11,13 +11,20 @@ import java.util.Date;
 import java.util.List;
 
 /**
- * Created by Spec_Inc on 3/12/2017.
+ * 聊天记录列表适配器
+ *
+ * Created by Solstice on 3/12/2017.
  */
 
 public class ChatLogAdapter extends BaseAdapter<ChatLog> {
 
     public ChatLogAdapter(Context context, List data) {
         super(context, data);
+    }
+
+    @Override
+    public int getLayoutId() {
+        return R.layout.item_chat_left;
     }
 
     @Override
@@ -28,10 +35,5 @@ public class ChatLogAdapter extends BaseAdapter<ChatLog> {
         SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd hh:mm");
         Date date =  new Date(System.currentTimeMillis());
         holder.setText(R.id.time, format.format(date));
-    }
-
-    @Override
-    public int getLayoutId() {
-        return R.layout.item_chat_left;
     }
 }

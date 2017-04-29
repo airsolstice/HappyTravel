@@ -17,17 +17,16 @@
             android:layout_height="match_parent"
             android:layout_weight="1" />
 
-        <TextView
+        <ImageView
+            android:id="@+id/left_move"
             android:layout_width="1dp"
             android:layout_height="match_parent"
             android:layout_weight="1"
-            android:gravity="center_vertical|right"
-            android:text="="
-            android:textColor="@color/green"
-            android:textSize="15sp"
-            android:textStyle="bold" />
-
+            android:padding="10dp"
+            android:src="@mipmap/ic_empty"
+            android:gravity="center_vertical|right"/>
         <TextView
+            android:id="@+id/group_name"
             android:layout_width="1dp"
             android:layout_height="match_parent"
             android:layout_weight="1"
@@ -37,17 +36,17 @@
             android:textSize="17sp"
             android:textStyle="bold" />
 
-        <TextView
+        <ImageView
+            android:id="@+id/right_move"
             android:layout_width="1dp"
             android:layout_height="match_parent"
             android:layout_weight="1"
             android:gravity="center_vertical|left"
-            android:text="="
-            android:textColor="@color/green"
-            android:textSize="15sp"
-            android:textStyle="bold" />
+            android:padding="10dp"
+            android:src="@mipmap/ic_empty"/>
 
         <TextView
+            android:id="@+id/group_chat"
             android:layout_width="1dp"
             android:layout_height="match_parent"
             android:layout_weight="1"

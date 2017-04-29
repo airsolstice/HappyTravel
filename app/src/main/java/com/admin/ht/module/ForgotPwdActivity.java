@@ -26,6 +26,11 @@ import rx.Subscriber;
 import rx.android.schedulers.AndroidSchedulers;
 import rx.schedulers.Schedulers;
 
+/**
+ * 忘记密码Activity
+ *
+ * Created by Solstice on 3/12/2017.
+ */
 public class ForgotPwdActivity extends BaseActivity {
 
     @Bind(R.id.phone)
@@ -41,7 +46,6 @@ public class ForgotPwdActivity extends BaseActivity {
     private String mPwdStr;
     private String mVerifyStr;
     private String mCodeStr;
-
     private EventHandler mHandler = new EventHandler() {
         String str = null;
 
@@ -73,7 +77,6 @@ public class ForgotPwdActivity extends BaseActivity {
                     ToastUtils.showShort(mContext, str);
                 }
             });
-
         }
     };
 
@@ -135,7 +138,6 @@ public class ForgotPwdActivity extends BaseActivity {
 
     }
 
-
     private Handler handler = new Handler() {
 
         @Override
@@ -147,7 +149,6 @@ public class ForgotPwdActivity extends BaseActivity {
             }
         }
     };
-
 
     public void retrieveSvc(String id, String pwd) {
         ApiClient.service.retrievePwd(id, StringUtils.MD5(pwd))
@@ -187,7 +188,6 @@ public class ForgotPwdActivity extends BaseActivity {
                 });
 
     }
-
 
     @Override
     protected String getTAG() {

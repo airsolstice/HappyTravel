@@ -1,7 +1,5 @@
 package com.admin.ht.retro;
 
-
-import com.admin.ht.utils.LogUtils;
 import com.google.gson.Gson;
 import com.google.gson.stream.JsonReader;
 import java.io.Closeable;
@@ -14,9 +12,10 @@ import retrofit2.Converter;
 /**
  * 自定义Response Gson解析器
  *
- * Created by Spec_Inc on 4/16/2017.
+ * Created by Solstice on 4/16/2017.
  */
 public class GsonResponseBodyConverter<T> implements Converter<ResponseBody, T> {
+
     private final Gson gson;
     private final Type type;
 
@@ -45,8 +44,8 @@ public class GsonResponseBodyConverter<T> implements Converter<ResponseBody, T> 
             return;
         try {
             closeable.close();
-        } catch (IOException ignored) {
-            
+        } catch (IOException e) {
+            throw new AssertionError(e);
         }
     }
 }

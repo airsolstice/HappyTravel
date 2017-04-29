@@ -1,23 +1,15 @@
-/*
- * Copyright (C) 2016 即时通讯网(52im.net) The MobileIMSDK Project. 
- * All rights reserved.
- * Project URL:https://github.com/JackJiang2011/MobileIMSDK
- *  
- * 即时通讯网(52im.net) - 即时通讯技术社区! PROPRIETARY/CONFIDENTIAL.
- * Use is subject to license terms.
- * 
- * MessageQoSEventImpl.java at 2016-2-20 11:20:18, code by Jack Jiang.
- * You can contact author with jack.jiang@52im.net or jb2011@163.com.
- */
 package com.admin.ht.IM.impl;
 
 import android.util.Log;
-
 import net.openmob.mobileimsdk.android.event.MessageQoSEvent;
 import net.openmob.mobileimsdk.server.protocal.Protocal;
-
 import java.util.ArrayList;
 
+/**
+ * IM通讯消息回调
+ *
+ * Created by Solstice on 4/27/2017.
+ */
 public class MessageQoSEventImpl implements MessageQoSEvent {
     private final static String TAG = MessageQoSEventImpl.class.getSimpleName();
 

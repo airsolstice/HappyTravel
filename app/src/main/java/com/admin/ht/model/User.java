@@ -1,10 +1,13 @@
 
 package com.admin.ht.model;
-
 import com.alibaba.fastjson.JSONObject;
-
 import java.io.Serializable;
 
+/**
+ * 用户实体类
+ *
+ * Created by Solstice on 3/12/2017.
+ */
 public class User implements Serializable{
 	//用户id，在移动端使用手机号
 	private String id;
@@ -22,17 +25,12 @@ public class User implements Serializable{
 	private int status;
 	//头像链接
 	private String url;
-
 	private double lat;
-
 	private double lng;
-
 	private String note;
-
 	private int chatId;
 
 	public User(){}
-
 
 	//用户个人信息获取
 	public User(String id, String name, String email, String url){
@@ -111,19 +109,15 @@ public class User implements Serializable{
 	public void setChatId(int chatId) {
 		this.chatId = chatId;
 	}
-
 	public double getLat() {
 		return lat;
 	}
-
 	public void setLat(double lat) {
 		this.lat = lat;
 	}
-
 	public double getLng() {
 		return lng;
 	}
-
 	public void setLng(double lng) {
 		this.lng = lng;
 	}

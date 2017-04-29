@@ -15,49 +15,12 @@ import com.readystatesoftware.systembartint.SystemBarTintManager;
 import butterknife.ButterKnife;
 
 /**
- * Created by Administrator on 2016/10/31 0031.
+ * Activity基类
+ *
+ * Created by Solstice on 2016/10/31 0031.
  */
 public abstract class BaseActivity extends AppCompatActivity {
 
-    protected String TAG = getTAG();
-
-    /**
-     * 设置控制台目标对象
-     */
-    protected abstract String getTAG();
-
-    /**
-     * 设置是否执行Status Bar自适应
-     */
-    public abstract boolean setTranslucent();
-
-    private boolean isTranslucent = setTranslucent();
-
-    public abstract boolean setDebug();
-
-    protected boolean isDebug = setDebug();
-
-    /**
-     * 设置布局id
-     */
-    public abstract int setLayoutId();
-
-    /**
-     * activity关联布局
-     */
-    protected int layoutId = setLayoutId();
-    /**
-     * 上下文引用
-     */
-    protected Context mContext = null;
-
-    private SystemBarTintManager mTintManager;
-
-    private View mDecorView;
-
-    protected BaseApplication mApplication;
-
-    protected SharedPreferences mPreferences;
     public static String FILE_NAME = "user_login_info_file";
     public static String COUNT = "user_count";
     public static String PWD = "user_pwd";
@@ -69,8 +32,37 @@ public abstract class BaseActivity extends AppCompatActivity {
     public static String USER_EMAIL = "user_email";
     public static String USER_NAME = "user_name";
     public static String USER_CHAT_ID = "user_chat_id";
-
     public static String USER_DEFAULT_HEAD_URL = "http://img1.imgtn.bdimg.com/it/u=3995083595,771039139&fm=214&gp=0.jpg";
+
+    protected String TAG = getTAG();
+    /**
+     * 设置控制台目标对象
+     */
+    protected abstract String getTAG();
+    /**
+     * 设置是否执行Status Bar自适应
+     */
+    public abstract boolean setTranslucent();
+    private boolean isTranslucent = setTranslucent();
+    public abstract boolean setDebug();
+    protected boolean isDebug = setDebug();
+
+    /**
+     * 设置布局id
+     */
+    public abstract int setLayoutId();
+    /**
+     * activity关联布局
+     */
+    protected int layoutId = setLayoutId();
+    /**
+     * 上下文引用
+     */
+    protected Context mContext = null;
+    private SystemBarTintManager mTintManager;
+    private View mDecorView;
+    protected BaseApplication mApplication;
+    protected SharedPreferences mPreferences;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -85,11 +77,6 @@ public abstract class BaseActivity extends AppCompatActivity {
         mPreferences = mContext.getSharedPreferences(FILE_NAME, 0);
     }
 
-    /**
-     *
-     * @param user
-     * @return
-     */
     public boolean putUser(User user){
         SharedPreferences.Editor editor = mPreferences.edit();
         editor.putString(USER_ID, user.getId());

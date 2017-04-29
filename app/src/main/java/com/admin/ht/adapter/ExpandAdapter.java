@@ -19,7 +19,6 @@ import android.view.ViewGroup;
 import android.widget.BaseExpandableListAdapter;
 import android.widget.ImageView;
 import android.widget.TextView;
-
 import com.admin.ht.R;
 import com.admin.ht.base.Constant;
 import com.admin.ht.model.Item;
@@ -31,19 +30,18 @@ import com.admin.ht.utils.LogUtils;
 import com.nostra13.universalimageloader.core.ImageLoader;
 import com.nostra13.universalimageloader.core.assist.ImageSize;
 import com.nostra13.universalimageloader.core.listener.SimpleImageLoadingListener;
-
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
 import rx.Subscriber;
 import rx.android.schedulers.AndroidSchedulers;
 import rx.schedulers.Schedulers;
 
 /**
- * Created by Spec_Inc on 4/22/2017.
+ * 好友列表适配器
+ *
+ * Created by Solstice on 4/22/2017.
  */
-
 public class ExpandAdapter extends BaseExpandableListAdapter {
 
     private Context mContext;
@@ -60,13 +58,6 @@ public class ExpandAdapter extends BaseExpandableListAdapter {
         mData = list;
     }
 
-    public Map<String, User> getUserData(){
-        return mUserData;
-    }
-
-    public void setData(List<List<Item>> list) {
-        mData = list;
-    }
 
     @Override
     public int getGroupCount() {
@@ -104,6 +95,12 @@ public class ExpandAdapter extends BaseExpandableListAdapter {
     }
 
     @Override
+    public boolean isChildSelectable(int groupPosition, int childPosition) {
+        /* 实现ChildView点击事件，必须返回true */
+        return true;
+    }
+
+    @Override
     public View getGroupView(int groupPosition, boolean isExpanded,
                              View convertView, ViewGroup parent) {
         if (convertView == null) {
@@ -126,34 +123,31 @@ public class ExpandAdapter extends BaseExpandableListAdapter {
         if (convertView == null) {
             convertView = mInflater.inflate(R.layout.item_child, null);
         }
-
         ChildViewHolder holder = new ChildViewHolder();
         holder.mIcon = (ImageView) convertView.findViewById(R.id.img);
         //设置默认头像
         holder.mChildName = (TextView) convertView.findViewById(R.id.item_name);
         //设置默认用户信息
-        holder.mChildName.setText("HP user" + "(" + getChild(groupPosition, childPosition).getId() + ")");
-//        holder.mChildName.setText(getChild(groupPosition, childPosition)
-//                .getName() + "("+getChild(groupPosition, childPosition).getId() + ")");
+        holder.mChildName.setText("user" + "(" + getChild(groupPosition, childPosition).getId() + ")");
         holder.mDetail = (TextView) convertView.findViewById(R.id.item_detail);
-        holder.mDetail.setText("description......");
-//        holder.mDetail.setText(getChild(groupPosition, childPosition)
-//                .getNote());
-
+        holder.mDetail.setText("desc");
         getTargetUserInfo(getChild(groupPosition, childPosition).getId(),holder);
-
 
         return convertView;
     }
 
-
+    /**
+     * 获取目标用户信息
+     *
+     * @param id
+     * @param holder
+     */
     public void getTargetUserInfo(String id, final ChildViewHolder holder) {
         ApiClient.service.getUserInfo(id)
                 .subscribeOn(Schedulers.newThread())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(new Subscriber<Result>() {
                     Result result = null;
-
                     @Override
                     public void onCompleted() {
                         String str;
@@ -184,7 +178,7 @@ public class ExpandAdapter extends BaseExpandableListAdapter {
                         } else {
                             str = "未知异常";
                         }
-                        LogUtils.e("Adapter", str);
+                        LogUtils.d("Adapter", str);
                     }
 
                     @Override
@@ -199,13 +193,6 @@ public class ExpandAdapter extends BaseExpandableListAdapter {
                     }
                 });
 
-    }
-
-
-    @Override
-    public boolean isChildSelectable(int groupPosition, int childPosition) {
-        /* 很重要：实现ChildView点击事件，必须返回true */
-        return true;
     }
 
     private Drawable getRoundCornerDrawable(int resId, float roundPX /* 圆角的半径 */) {
@@ -240,6 +227,15 @@ public class ExpandAdapter extends BaseExpandableListAdapter {
         can.drawBitmap(bitmap, rect, rect, paint);
         return new BitmapDrawable(retBmp);
     }
+
+    public Map<String, User> getUserData(){
+        return mUserData;
+    }
+
+    public void setData(List<List<Item>> list) {
+        mData = list;
+    }
+
 
     private class GroupViewHolder {
         TextView mGroupName;

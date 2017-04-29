@@ -3,11 +3,11 @@ package com.admin.ht.model;
 import java.io.Serializable;
 
 /**
- * Created by Spec_Inc on 4/22/2017.
+ * 好友李彪子表实体类
+ *
+ * Created by Solstice on 3/12/2017.
  */
-
 public class Item implements Serializable{
-
 
     /*好友id，主键*/
     private String id;

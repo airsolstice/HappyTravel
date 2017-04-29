@@ -14,11 +14,15 @@ import com.facebook.drawee.view.SimpleDraweeView;
 
 import butterknife.Bind;
 
+/**
+ * 欢迎Activity
+ *
+ * Created by Solstice on 3/12/2017.
+ */
 public class WelcomeActivity extends BaseActivity {
 
     @Bind(R.id.simple_img)
     SimpleDraweeView mSimpleView;
-
     private long mExitTime;
 
     @Override
@@ -30,9 +34,7 @@ public class WelcomeActivity extends BaseActivity {
 
     }
 
-
     private void initAnimation() {
-
         /* 设置透明度动画*/
         AlphaAnimation anima = new AlphaAnimation(0.0f, 1.0f);
         /* 设置动画时间*/
@@ -85,7 +87,6 @@ public class WelcomeActivity extends BaseActivity {
             return true;
         }
         return super.onKeyDown(keyCode, event);
-
     }
 
     @Override

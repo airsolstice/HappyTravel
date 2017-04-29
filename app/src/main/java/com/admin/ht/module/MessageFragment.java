@@ -1,19 +1,24 @@
 package com.admin.ht.module;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.ListView;
 
 import com.admin.ht.R;
 import com.admin.ht.adapter.RecentMsgAdapter;
+import com.admin.ht.base.BaseActivity;
 import com.admin.ht.base.BaseFragment;
 import com.admin.ht.base.Constant;
 import com.admin.ht.db.ChatLogHelper;
+import com.admin.ht.db.RecentMsgHelper;
 import com.admin.ht.model.ChatLog;
+import com.admin.ht.model.Item;
 import com.admin.ht.model.RecentMsg;
 import com.admin.ht.model.Result;
 import com.admin.ht.model.User;
@@ -24,21 +29,22 @@ import net.openmob.mobileimsdk.android.event.ChatTransDataEvent;
 import net.openmob.mobileimsdk.android.event.MessageQoSEvent;
 import net.openmob.mobileimsdk.server.protocal.Protocal;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
 import rx.Subscriber;
 import rx.schedulers.Schedulers;
 
 /**
- * Created by Spec_Inc on 3/4/2017.
+ * 消息碎片类
+ *
+ * Created by Solstice on 3/12/2017.
  */
-
-public class MessageFragment extends BaseFragment implements  ChatTransDataEvent, MessageQoSEvent {
+public class MessageFragment extends BaseFragment implements AdapterView.OnItemClickListener, ChatTransDataEvent, MessageQoSEvent {
 
     private ListView mRecentList = null;
-
     private List<RecentMsg> mData = new ArrayList<>();
-
     private RecentMsgAdapter mAdapter = null;
 
     @Override
@@ -48,10 +54,13 @@ public class MessageFragment extends BaseFragment implements  ChatTransDataEvent
         ClientCoreSDK.getInstance().setMessageQoSEvent(this);
 
         View v = inflater.inflate(R.layout.layout_message, null);
+        mData.clear();
         mRecentList = (ListView) v.findViewById(R.id.list_view);
+        List<RecentMsg> result = RecentMsgHelper.queryAll();
+        mData.addAll(result);
         mAdapter = new RecentMsgAdapter(getActivity(), mData);
         mRecentList.setAdapter(mAdapter);
-
+        mRecentList.setOnItemClickListener(this);
         return v;
     }
 
@@ -60,11 +69,11 @@ public class MessageFragment extends BaseFragment implements  ChatTransDataEvent
         for(RecentMsg item : mData){
            if(item.getId().equals(user.getId())){
                item.setCount(item.getCount() + 1);
+               RecentMsgHelper.update(item);
                flag = false;
                break;
            }
         }
-
         if(flag){
             RecentMsg msg = new RecentMsg();
             msg.setId(user.getId());
@@ -73,6 +82,7 @@ public class MessageFragment extends BaseFragment implements  ChatTransDataEvent
             msg.setName(user.getName()+"("+user.getId()+")");
             msg.setNote(user.getNote());
             mData.add(msg);
+            RecentMsgHelper.insert(msg);
         }
         getActivity().runOnUiThread(new Runnable() {
             @Override
@@ -115,7 +125,6 @@ public class MessageFragment extends BaseFragment implements  ChatTransDataEvent
                         } else {
                             str = "未知异常";
                         }
-
                         if (isDebug) {
                             LogUtils.i(TAG, str);
                         }
@@ -173,4 +182,17 @@ public class MessageFragment extends BaseFragment implements  ChatTransDataEvent
         return false;
     }
 
+    @Override
+    public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+        RecentMsg msg = mData.get(position);
+        Item item = new Item();
+        item.setId(msg.getId());
+        item.setUrl(msg.getUrl());
+        item.setStatus(1);
+        item.setName(msg.getName());
+        item.setNote(msg.getNote());
+        Intent intent = new Intent(getActivity(), SingleChatActivity.class);
+        intent.putExtra(BaseActivity.TARGET_USER, item);
+        getActivity().startActivity(intent);
+    }
 }

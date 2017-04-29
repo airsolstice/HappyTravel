@@ -1,9 +1,13 @@
 package com.admin.ht.model;
 
 import java.util.Date;
-
 import com.alibaba.fastjson.JSONObject;
 
+/**
+ * 位置实体类
+ *
+ * Created by Solstice on 3/12/2017.
+ */
 public class Position {
 
 	private int no;

@@ -1,14 +1,17 @@
 package com.admin.ht.IM;
 
 import android.content.Context;
-
 import com.admin.ht.IM.impl.ChatBaseEventImpl;
 import com.admin.ht.IM.impl.ChatTransDataEventImpl;
 import com.admin.ht.IM.impl.MessageQoSEventImpl;
-
 import net.openmob.mobileimsdk.android.ClientCoreSDK;
 import net.openmob.mobileimsdk.android.conf.ConfigEntity;
 
+/**
+ * IM客户端管理类
+ *
+ * Created by Solstice on 4/27/2017.
+ */
 public class IMClientManager {
     private static IMClientManager instance = null;
     private boolean init = false;
@@ -54,7 +57,6 @@ public class IMClientManager {
             ClientCoreSDK.getInstance().setChatBaseEvent(baseEventListener);
             ClientCoreSDK.getInstance().setChatTransDataEvent(transDataListener);
             ClientCoreSDK.getInstance().setMessageQoSEvent(messageQoSListener);
-
             init = true;
         }
     }

@@ -6,28 +6,25 @@ import android.database.sqlite.SQLiteDatabase;
 import android.os.AsyncTask;
 import android.util.Log;
 import android.widget.Toast;
-
 import com.admin.ht.IM.IMClientManager;
 import com.admin.ht.greendao.DaoMaster;
 import com.admin.ht.greendao.DaoSession;
 import com.admin.ht.utils.ImageUtils;
 import com.baidu.mapapi.SDKInitializer;
 import com.facebook.drawee.backends.pipeline.Fresco;
-
 import net.openmob.mobileimsdk.android.core.LocalUDPDataSender;
-
 import java.util.LinkedList;
 import java.util.List;
-
 import cn.smssdk.SMSSDK;
 
 /**
- * Created by Administrator on 2016/11/1 0001.
+ * 平台基类，实现多种第三方框架的初始化，数据库初始化
+ *
+ * Created by Solstice on 2016/11/1.
  */
 public class BaseApplication extends Application {
 
     private List<Activity> mList = new LinkedList<>();
-
     private static DaoSession mDaoSession;
 
     @Override
@@ -80,7 +77,6 @@ public class BaseApplication extends Application {
             }
         }.execute();
     }
-
 
     public void exit() {
         doLogout();

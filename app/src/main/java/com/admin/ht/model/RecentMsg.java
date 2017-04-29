@@ -4,14 +4,18 @@ import com.alibaba.fastjson.JSONObject;
 
 import org.greenrobot.greendao.annotation.Entity;
 import org.greenrobot.greendao.annotation.Generated;
+import org.greenrobot.greendao.annotation.Id;
 
 /**
- * Created by Spec_Inc on 3/5/2017.
+ * 最近聊天记录实体类
+ *
+ * Created by Solstice on 3/12/2017.
  */
 @Entity
 public class RecentMsg {
 
     /*好友id，主键*/
+    @Id
     private String id;
     /*好友昵称*/
     private String name;

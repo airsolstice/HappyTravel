@@ -16,7 +16,6 @@ import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
-
 import com.admin.ht.IM.IMClientManager;
 import com.admin.ht.R;
 import com.admin.ht.base.BaseActivity;
@@ -28,20 +27,22 @@ import com.admin.ht.utils.LogUtils;
 import com.admin.ht.utils.NetUtils;
 import com.admin.ht.utils.StringUtils;
 import com.admin.ht.utils.ToastUtils;
-
 import net.openmob.mobileimsdk.android.ClientCoreSDK;
 import net.openmob.mobileimsdk.android.core.LocalUDPDataSender;
 import net.openmob.mobileimsdk.android.event.ChatBaseEvent;
-
 import java.util.Observable;
 import java.util.Observer;
-
 import butterknife.Bind;
 import butterknife.OnClick;
 import rx.Subscriber;
 import rx.android.schedulers.AndroidSchedulers;
 import rx.schedulers.Schedulers;
 
+/**
+ * 登入Activity
+ *
+ * Created by Solstice on 3/12/2017.
+ */
 public class LoginActivity extends BaseActivity implements ChatBaseEvent{
 
     @Bind(R.id.phone)
@@ -59,7 +60,6 @@ public class LoginActivity extends BaseActivity implements ChatBaseEvent{
     private String mPwdStr;
     private Observer mObserver = null;
 
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         requestWindowFeature(Window.FEATURE_NO_TITLE);
@@ -68,11 +68,12 @@ public class LoginActivity extends BaseActivity implements ChatBaseEvent{
         mPhoneStr = mPreferences.getString(COUNT, "");
         mPwdStr = mPreferences.getString(PWD, "");
         isSaved = mPreferences.getBoolean(IS_SAVED, false);
-        mPhone.setText(mPhoneStr);
-        mPhone.setSelection(mPhoneStr.length());
-        mPwd.setText(mPwdStr);
-        mIsSaved.setChecked(isSaved);
-
+        if(isSaved){
+            mPhone.setText(mPhoneStr);
+            mPhone.setSelection(mPhoneStr.length());
+            mPwd.setText(mPwdStr);
+            mIsSaved.setChecked(isSaved);
+        }
     }
 
     @OnClick(R.id.register)
@@ -84,7 +85,6 @@ public class LoginActivity extends BaseActivity implements ChatBaseEvent{
     public void forgotPwd() {
         startActivity(new Intent(mContext, ForgotPwdActivity.class));
     }
-
 
     @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
     @OnClick(R.id.do_login_in)
@@ -112,10 +112,8 @@ public class LoginActivity extends BaseActivity implements ChatBaseEvent{
         editor.putBoolean(IS_SAVED, mIsSaved.isChecked());
         editor.commit();
 
-
         loginInSvc();
     }
-
 
     public void loginInSvc() {
         ApiClient.service.loginIn(mPhoneStr, StringUtils.MD5(mPwdStr))
@@ -129,7 +127,7 @@ public class LoginActivity extends BaseActivity implements ChatBaseEvent{
                         if(result == null){
                             str = "未知异常";
                         } else if (result.getCode() == Constant.SUCCESS) {
-                            str = "正在加载地图组件";
+                            str = "用户验证成功，正在的登录IM服务器";
                             User user = ApiClient.gson.fromJson(result.getModel().toString(), User.class);
                             loginIM(user.getId());
                             Intent intent = new Intent(LoginActivity.this, HomeActivity.class);
@@ -163,7 +161,6 @@ public class LoginActivity extends BaseActivity implements ChatBaseEvent{
 
     }
 
-
     private void loginIM(String id) {
         //设置登入回调
         ClientCoreSDK.getInstance().setChatBaseEvent(this);
@@ -177,6 +174,7 @@ public class LoginActivity extends BaseActivity implements ChatBaseEvent{
                 if (code == 0) {
                     int id = ClientCoreSDK.getInstance().getCurrentUserId();
                     Log.d(TAG, "登陆成功！" + id);
+                    LogUtils.i(TAG, "登录成功，" + id);
                 }
                 else {
                     Log.d(TAG, "登陆失败，错误码=" + code);
@@ -195,8 +193,7 @@ public class LoginActivity extends BaseActivity implements ChatBaseEvent{
             @Override
             protected void fireAfterSendLogin(int code) {
                 if (code == 0) {
-                    Toast.makeText(mContext, "数据发送成功！", Toast.LENGTH_SHORT).show();
-                    Log.d(TAG, "登陆信息已成功发出！" + targetId + "-" + pwd);
+                    Log.d(TAG, "登陆信息已成功发出！" + targetId );
                 } else {
                     Toast.makeText(mContext, "数据发送失败。错误码是：" + code + "！",
                             Toast.LENGTH_SHORT).show();
@@ -210,7 +207,6 @@ public class LoginActivity extends BaseActivity implements ChatBaseEvent{
         LogUtils.e(TAG, "配置网络");
         NetUtils.openSetting(this);
     }
-
 
     @Override
     protected void onStart() {
@@ -267,6 +263,7 @@ public class LoginActivity extends BaseActivity implements ChatBaseEvent{
     public void onLoginMessage(int dwUserId, int dwErrorCode) {
         if (dwErrorCode == 0) {
             Log.i(TAG, "登录成功，当前分配的user_id = " + dwUserId);
+            LogUtils.i(TAG, "登录成功," + dwUserId);
         } else {
             Log.e(TAG, "登录失败，错误代码：" + dwErrorCode);
         }

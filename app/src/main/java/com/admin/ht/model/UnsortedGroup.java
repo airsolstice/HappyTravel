@@ -3,9 +3,10 @@ package com.admin.ht.model;
 import com.alibaba.fastjson.JSONObject;
 
 /**
- * Created by Spec_Inc on 4/19/2017.
+ * 未分类的群组实体类
+ *
+ * Created by Solstice on 3/12/2017.
  */
-
 public class UnsortedGroup {
 
     private int no;

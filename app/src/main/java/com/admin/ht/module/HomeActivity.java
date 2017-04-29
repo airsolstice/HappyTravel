@@ -1,6 +1,5 @@
 package com.admin.ht.module;
 
-import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.RequiresApi;
@@ -8,37 +7,32 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentStatePagerAdapter;
 import android.support.v4.view.ViewPager;
-import android.util.Log;
+import android.support.v7.widget.PopupMenu;
 import android.view.KeyEvent;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.Window;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
-
 import com.admin.ht.IM.IMClientManager;
 import com.admin.ht.R;
 import com.admin.ht.base.BaseActivity;
-import com.admin.ht.base.Constant;
-import com.admin.ht.model.Result;
 import com.admin.ht.model.User;
-import com.admin.ht.retro.ApiClient;
 import com.admin.ht.utils.LogUtils;
 import com.admin.ht.widget.NoScrollViewPager;
-import com.baidu.mapapi.model.LatLng;
-
-import net.openmob.mobileimsdk.android.core.LocalUDPDataSender;
-
 import java.util.ArrayList;
 import java.util.List;
-
 import butterknife.Bind;
 import butterknife.OnClick;
-import rx.Subscriber;
-import rx.android.schedulers.AndroidSchedulers;
-import rx.schedulers.Schedulers;
 
+/**
+ * 主页Activity
+ *
+ * Created by Solstice on 3/12/2017.
+ */
 public class HomeActivity extends BaseActivity {
 
     @Bind(R.id.container)
@@ -57,7 +51,6 @@ public class HomeActivity extends BaseActivity {
     TextView mTitle;
 
     private List<Fragment> mFrgs = new ArrayList<>();
-
     private  long mExitTime ;
 
     @Override
@@ -117,9 +110,51 @@ public class HomeActivity extends BaseActivity {
         mPager.setCurrentItem(0);
     }
 
+    @OnClick(R.id.add)
+    public void getMenu(){
+        PopupMenu popup = new PopupMenu(mContext, mAdd);
+        popup.getMenuInflater().inflate(R.menu.menu_home, popup.getMenu());
+        popup.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
+            @Override
+            public boolean onMenuItemClick(MenuItem item) {
+                switch (item.getItemId()){
+                    case R.id.add_personal:
+
+                        break;
+
+                    case R.id.add_group:
+
+                        break;
+                }
+                return true;
+            }
+        });
+        popup.show();
+    }
+
+    @Override
+    public boolean onKeyDown(int keyCode, KeyEvent event) {
+        if (keyCode == KeyEvent.KEYCODE_BACK) {
+            if ((System.currentTimeMillis() - mExitTime) > 2000) {//
+                // 如果两次按键时间间隔大于2000毫秒，则不退出
+                Toast.makeText(this, "再按一次退出程序", Toast.LENGTH_SHORT).show();
+                mExitTime = System.currentTimeMillis();// 更新mExitTime
+            } else {
+                mApplication.exit();
+                System.exit(0);// 否则退出程序
+            }
+            return true;
+        }
+        return super.onKeyDown(keyCode, event);
+    }
+
+    @Override
+    protected void onDestroy() {
+        IMClientManager.getInstance(mContext).release();
+        super.onDestroy();
+    }
 
     class PagerAdapter extends FragmentStatePagerAdapter implements ViewPager.OnPageChangeListener {
-
 
         public PagerAdapter(FragmentManager fm) {
             super(fm);
@@ -141,7 +176,6 @@ public class HomeActivity extends BaseActivity {
                 if(!mPager.isNoScroll()){
                     mPager.setNoScroll(true);
                 }
-
                 mBack.setVisibility(View.GONE);
                 mTitle.setText("主页");
                 mAdd.setVisibility(View.GONE);
@@ -153,7 +187,6 @@ public class HomeActivity extends BaseActivity {
                 if(mPager.isNoScroll()){
                     mPager.setNoScroll(false);
                 }
-
                 mBack.setVisibility(View.VISIBLE);
                 mAdd.setVisibility(View.VISIBLE);
                 mContact.setVisibility(View.GONE);
@@ -170,31 +203,5 @@ public class HomeActivity extends BaseActivity {
         @Override
         public void onPageScrollStateChanged(int state) {
         }
-    }
-
-
-
-    @Override
-    public boolean onKeyDown(int keyCode, KeyEvent event) {
-        if (keyCode == KeyEvent.KEYCODE_BACK) {
-            if ((System.currentTimeMillis() - mExitTime) > 2000) {//
-                // 如果两次按键时间间隔大于2000毫秒，则不退出
-                Toast.makeText(this, "再按一次退出程序", Toast.LENGTH_SHORT).show();
-                mExitTime = System.currentTimeMillis();// 更新mExitTime
-            } else {
-                mApplication.exit();
-                System.exit(0);// 否则退出程序
-            }
-            return true;
-        }
-        return super.onKeyDown(keyCode, event);
-
-    }
-
-
-    @Override
-    protected void onDestroy() {
-        IMClientManager.getInstance(mContext).release();
-        super.onDestroy();
     }
 }

@@ -10,13 +10,19 @@ import com.admin.ht.model.RecentMsg;
 import java.util.List;
 
 /**
- * Created by Spec_Inc on 3/12/2017.
+ * 最近消息列表适配器
+ *
+ * Created by Solstice on 3/12/2017.
  */
-
 public class RecentMsgAdapter extends BaseAdapter<RecentMsg> {
 
     public RecentMsgAdapter(Context context, List data) {
         super(context, data);
+    }
+
+    @Override
+    public int getLayoutId() {
+        return R.layout.item_msg;
     }
 
     @Override
@@ -28,12 +34,4 @@ public class RecentMsgAdapter extends BaseAdapter<RecentMsg> {
         holder.setText(R.id.item_detail, item.getNote());
         holder.setText(R.id.item_badge, item.getCount()+ "");
     }
-
-    @Override
-    public int getLayoutId() {
-        return R.layout.item_msg;
-    }
-
-
-
 }

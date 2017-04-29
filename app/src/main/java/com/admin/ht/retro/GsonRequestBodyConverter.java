@@ -1,7 +1,7 @@
 package com.admin.ht.retro;
 
-import com.admin.ht.utils.LogUtils;
 import com.google.gson.Gson;
+
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
@@ -14,11 +14,12 @@ import retrofit2.Converter;
 
 
 /**
- * 自定义Requeset Gson解析器
+ * 自定义Request Gson解析器
  *
- * Created by Spec_Inc on 4/16/2017.
+ * Created by Solstice on 4/16/2017.
  */
 public class GsonRequestBodyConverter<T> implements Converter<T, RequestBody> {
+
     private static final MediaType MEDIA_TYPE = MediaType.parse("application/json; charset=UTF-8");
     private static final Charset UTF_8 = Charset.forName("UTF-8");
     private final Gson gson;

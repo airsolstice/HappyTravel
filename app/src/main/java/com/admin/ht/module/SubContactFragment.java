@@ -28,9 +28,10 @@ import rx.Subscriber;
 import rx.schedulers.Schedulers;
 
 /**
- * Created by Spec_Inc on 3/4/2017.
+ * 个人群组碎片类
+ *
+ * Created by Solstice on 3/12/2017.
  */
-
 public class SubContactFragment extends BaseFragment implements ExpandableListView.OnChildClickListener {
 
     private ExpandableListView mListView = null;
@@ -41,16 +42,15 @@ public class SubContactFragment extends BaseFragment implements ExpandableListVi
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
     }
 
     @Override
     public View onCreateView(LayoutInflater inflater,
                              @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-
         if (mUser == null) {
             mUser = getUser();
         }
+
         if (isDebug) {
             LogUtils.e(TAG, mUser.toString());
         }

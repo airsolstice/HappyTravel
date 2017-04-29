@@ -16,7 +16,7 @@ import rx.Observable;
 /**
  * 后端服务API
  *
- * Created by Administrator on 2016/11/18 0018.
+ * Created by Solstice on 2016/11/18 0018.
  */
 public class ApiClient {
     /**
@@ -24,43 +24,101 @@ public class ApiClient {
      * 端口：8080
      */
     public interface ApiService {
-        /* 登入 */
+
+        /**
+         * 登入
+         *
+         * @param id
+         * @param pwd
+         * @return
+         */
         @FormUrlEncoded
         @POST("user/login")
         Observable<Result> loginIn(@Field("id") String id, @Field("pwd") String pwd);
-        /* 注册 */
+        /**
+         * 注册
+         *
+         * @param id
+         * @param email
+         * @param pwd
+         * @return
+         */
         @FormUrlEncoded
         @POST("user/regist")
         Observable<Result> register(@Field("id") String id, @Field("email") String email, @Field("pwd") String pwd);
-        /* 重置密码 */
+        /**
+         * 重置密码
+         *
+         * @param id
+         * @param pwd
+         * @return
+         */
         @FormUrlEncoded
         @POST("user/retrievePwd")
         Observable<Result> retrievePwd(@Field("id") String id, @Field("pwd") String pwd);
-        /* 更新用户位置 */
+        /**
+         * 更新用户位置
+         *
+         * @param id
+         * @param lat
+         * @param lng
+         * @return
+         */
         @FormUrlEncoded
         @POST("loc/update")
         Observable<Result> updatePosition(@Field("id") String id, @Field("lat") String lat, @Field("lng") String lng);
-        /* 获得群组列表 */
+        /**
+         * 获得群组列表
+         *
+         * @param id
+         * @return
+         */
         @FormUrlEncoded
         @POST("group/list")
         Observable<Result> getGroupList(@Field("id") String id);
-        /* 通过id获取用户信息 */
+        /**
+         * 通过id获取用户信息
+         *
+         * @param id
+         * @return
+         */
         @FormUrlEncoded
         @POST("user/info/get")
         Observable<Result> getUserInfo(@Field("id") String id);
-        /* 通过chat id反向获取用户信息 */
+        /**
+         * 通过chat id反向获取用户信息
+         *
+         * @param chatId
+         * @return
+         */
         @FormUrlEncoded
         @POST("user/info/bychatid/get")
         Observable<Result> getUserInfoByChatId(@Field("chatId") int chatId);
-        /* 通过id获取chat id */
+        /**
+         * 通过id获取chat id
+         *
+         * @param id
+         * @return
+         */
         @FormUrlEncoded
         @POST("user/chatid/get")
         Observable<Result> getChatId(@Field("id") String id);
-        /* 通过id获取用户行走轨迹 */
+
+        /**
+         * 通过id获取用户行走轨迹
+         *
+         * @param id
+         * @return
+         */
         @FormUrlEncoded
         @POST("loc/trace")
         Observable<Result> getTrace(@Field("id") String id);
-        /* 注销 */
+        /**
+         * 注销
+         *
+         * @param id
+         * @return
+         */
         @FormUrlEncoded
         @PUT("user/loginOut")
         Observable<Result> loginOut(@Field("id") String id);

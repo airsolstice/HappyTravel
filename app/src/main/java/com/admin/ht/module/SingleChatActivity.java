@@ -8,6 +8,7 @@ import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
+
 import com.admin.ht.R;
 import com.admin.ht.adapter.ChatLogAdapter;
 import com.admin.ht.base.BaseActivity;
@@ -19,21 +20,28 @@ import com.admin.ht.model.Result;
 import com.admin.ht.model.User;
 import com.admin.ht.retro.ApiClient;
 import com.admin.ht.utils.LogUtils;
+
 import net.openmob.mobileimsdk.android.ClientCoreSDK;
 import net.openmob.mobileimsdk.android.core.LocalUDPDataSender;
 import net.openmob.mobileimsdk.android.event.ChatTransDataEvent;
 import net.openmob.mobileimsdk.android.event.MessageQoSEvent;
 import net.openmob.mobileimsdk.server.protocal.Protocal;
+
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+
 import butterknife.Bind;
 import butterknife.OnClick;
 import rx.Subscriber;
 import rx.android.schedulers.AndroidSchedulers;
 import rx.schedulers.Schedulers;
 
-
+/**
+ * 单聊Activity
+ *
+ * Created by Solstice on 3/12/2017.
+ */
 public class SingleChatActivity extends BaseActivity implements ChatTransDataEvent, MessageQoSEvent {
 
     private List<ChatLog> mLogData = new ArrayList<>();
@@ -94,12 +102,9 @@ public class SingleChatActivity extends BaseActivity implements ChatTransDataEve
         if (isDebug) {
             Log.d(TAG, "目标用户=" + mTargetUser.getId());
         }
-
         mTitle.setText(mTargetUser.getId());
         initIMListener();
 
-        List<ChatLog> result = ChatLogHelper.queryById(mTargetUser.getId());
-        mLogData.addAll(result);
         mAdapter = new ChatLogAdapter(mContext, mLogData);
         //mAdapter = new SimpleChatLogAdapter(mContext, mLogData);
         mLog.setAdapter(mAdapter);
@@ -127,6 +132,7 @@ public class SingleChatActivity extends BaseActivity implements ChatTransDataEve
                     if (code == 0) {
                         Log.d(TAG, "数据已成功发出！");
                         ChatLog log = new ChatLog();
+                        log.setNo(mTargetUser.getChatId());
                         log.setName("我" + "(" + mHolderUser.getChatId() + "):");
                         log.setContent(msg);
                         log.setUrl(mHolderUser.getUrl());
@@ -138,7 +144,6 @@ public class SingleChatActivity extends BaseActivity implements ChatTransDataEve
             }.execute();
         } else
             Log.e(TAG, "len=" + (msg.length()));
-
         mEdit.setText("");
     }
 
@@ -171,7 +176,6 @@ public class SingleChatActivity extends BaseActivity implements ChatTransDataEve
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(new Subscriber<Result>() {
                     Result result = null;
-
                     @Override
                     public void onCompleted() {
                         String str;
@@ -180,6 +184,15 @@ public class SingleChatActivity extends BaseActivity implements ChatTransDataEve
                         } else if (result.getCode() == Constant.SUCCESS) {
                             str = "获取目标用户的信息";
                             mTargetUser = ApiClient.gson.fromJson(result.getModel().toString(), User.class);
+                            List<ChatLog> result = ChatLogHelper.queryById(mTargetUser.getChatId());
+                            if(result.size() > 20){
+                                mLogData.addAll(result.subList(result.size()-21, result.size() -1));
+                            }else {
+                                mLogData.addAll(result);
+                            }
+                            mAdapter.notifyDataSetChanged();
+                            //移动到尾部
+                            mLog.smoothScrollToPosition(mLog.getCount() - 1);
                         } else if (result.getCode() == Constant.FAIL) {
                             str = "更新失败";
                         } else if (result.getCode() == Constant.EXECUTING) {
@@ -216,6 +229,7 @@ public class SingleChatActivity extends BaseActivity implements ChatTransDataEve
     public void onTransBuffer(String fingerPrintOfProtocol, int userId, String content) {
         Log.d(TAG, "收到来自用户[" + userId + "]的消息:" + content + "," + fingerPrintOfProtocol);
         ChatLog log = new ChatLog();
+        log.setNo(userId);
         log.setContent(content);
         log.setUrl(BaseActivity.USER_DEFAULT_HEAD_URL);
         log.setName(userId + "");
@@ -223,7 +237,7 @@ public class SingleChatActivity extends BaseActivity implements ChatTransDataEve
         User user = this.getTargetUser();
         if (user != null) {
             log.setNo(user.getChatId());
-            log.setName(user.getName()+"("+user.getId()+")");
+            log.setName(user.getName() + "(" + user.getId() + ")");
             log.setContent(content);
             log.setType(2);
             log.setDate(new Date(System.currentTimeMillis()));
@@ -248,7 +262,6 @@ public class SingleChatActivity extends BaseActivity implements ChatTransDataEve
             Log.d(TAG, "收到对方已收到消息事件的通知，fp=" + theFingerPrint);
         }
     }
-
 
 
 }

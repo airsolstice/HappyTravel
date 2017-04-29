@@ -4,19 +4,20 @@ import com.admin.ht.base.Constant;
 import com.alibaba.fastjson.JSONObject;
 
 /**
- * Created by Spec_Inc on 3/25/2017.
+ * 通讯结果实体类
+ * <p>
+ * Created by Solstice on 3/12/2017.
  */
-
 public class Result {
 
-    private int 	code 	= Constant.SUCCESS;
-    private String 	msg 	= "";
-    private Object  model	= null;
+    private int code = Constant.SUCCESS;
+    private String msg = "";
+    private Object model = null;
 
     public Result() {
     }
 
-    public Result(Object  model) {
+    public Result(Object model) {
         this.model = model;
     }
 
@@ -25,7 +26,7 @@ public class Result {
         this.msg = msg;
     }
 
-    public Result(int code, String msg, Object  model) {
+    public Result(int code, String msg, Object model) {
         this.code = code;
         this.msg = msg;
         this.model = model;

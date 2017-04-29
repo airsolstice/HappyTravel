@@ -1,6 +1,5 @@
 package com.admin.ht.module;
 
-import android.content.Intent;
 import android.graphics.drawable.Drawable;
 import android.os.Build;
 import android.os.Bundle;
@@ -12,7 +11,6 @@ import android.text.TextUtils;
 import android.view.Window;
 import android.widget.CheckBox;
 import android.widget.EditText;
-import android.widget.Toast;
 
 import com.admin.ht.R;
 import com.admin.ht.base.BaseActivity;
@@ -31,6 +29,11 @@ import rx.Subscriber;
 import rx.android.schedulers.AndroidSchedulers;
 import rx.schedulers.Schedulers;
 
+/**
+ * 注册Activity
+ *
+ * Created by Solstice on 3/12/2017.
+ */
 public class RegisterActivity extends BaseActivity {
 
     @Bind(R.id.phone)
@@ -45,7 +48,6 @@ public class RegisterActivity extends BaseActivity {
     EditText mIdentifyingCode;
     @Bind(R.id.is_agree)
     CheckBox mIsAgree;
-
 
     private String mPhoneStr;
     private String mEmailStr;
@@ -199,7 +201,6 @@ public class RegisterActivity extends BaseActivity {
                     }
                 });
     }
-
 
     @Override
     protected String getTAG() {

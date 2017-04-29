@@ -19,9 +19,11 @@ import com.nostra13.universalimageloader.core.listener.SimpleImageLoadingListene
 import java.util.List;
 
 /**
- * Created by Spec_Inc on 4/26/2017.
+ *  简洁聊天记录列表适配器
+ *  实现用户和好友记录分左右两边（有bug）
+ *
+ * Created by Solstice on 4/26/2017.
  */
-
 public class SimpleChatLogAdapter extends BaseAdapter {
 
     private List<ChatLog> mData;

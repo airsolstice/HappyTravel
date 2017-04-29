@@ -1,5 +1,6 @@
 package com.admin.ht.module;
 
+import android.app.Activity;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.view.LayoutInflater;
@@ -9,7 +10,9 @@ import android.view.ViewGroup;
 import com.admin.ht.R;
 import com.admin.ht.base.BaseFragment;
 import com.admin.ht.base.Constant;
+import com.admin.ht.model.Item;
 import com.admin.ht.model.Result;
+import com.admin.ht.model.UnsortedGroup;
 import com.admin.ht.model.User;
 import com.admin.ht.retro.ApiClient;
 import com.admin.ht.utils.LogUtils;
@@ -27,14 +30,19 @@ import com.baidu.mapapi.map.MyLocationConfiguration;
 import com.baidu.mapapi.map.MyLocationConfiguration.LocationMode;
 import com.baidu.mapapi.map.MyLocationData;
 import com.baidu.mapapi.model.LatLng;
+import com.google.gson.Gson;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import rx.Subscriber;
 import rx.schedulers.Schedulers;
 
 /**
- * Created by Spec_Inc on 2/19/2017.
+ * 地图碎片类
+ *
+ * Created by Solstice on 3/12/2017.
  */
-
 public class MapFragment extends BaseFragment {
 
     private MapView mMapView;
@@ -43,7 +51,62 @@ public class MapFragment extends BaseFragment {
     private LocationClient mLocClient;
     private LocationListener myListener = new LocationListener();
     private boolean isFirstLoc = true;
+    private List<List<Item>> mData = new ArrayList<>();
+    private List<String> mGroups = new ArrayList<>();
 
+    @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        getGroupSvc();
+    }
+
+    @Nullable
+    @Override
+    public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+
+        View view = inflater.inflate(R.layout.fragment_map, container, false);
+        mMapView = (MapView) view.findViewById(R.id.map_view);
+        initLocation();
+        return view;
+    }
+
+    @Override
+    public void onActivityCreated(@Nullable Bundle savedInstanceState) {
+        super.onActivityCreated(savedInstanceState);
+    }
+
+    @Override
+    public void onPause() {
+        mMapView.onPause();
+        super.onPause();
+    }
+
+    @Override
+    public void onResume() {
+        mMapView.onResume();
+        super.onResume();
+    }
+
+    @Override
+    public void onDestroy() {
+        // 退出时销毁定位
+        mLocClient.stop();
+        // 关闭定位图层
+        mBaiduMap.setMyLocationEnabled(false);
+        mMapView.onDestroy();
+        mMapView = null;
+        super.onDestroy();
+    }
+
+    @Override
+    protected String getTAG() {
+        return "Map Fragment";
+    }
+
+    @Override
+    public boolean setDebug() {
+        return true;
+    }
 
     public void putUserLoc(LatLng ll) {
         if (mUser == null) {
@@ -60,7 +123,6 @@ public class MapFragment extends BaseFragment {
 
         updateSvc(mUser, ll);
     }
-
 
     public void updateSvc(User user, LatLng ll) {
 
@@ -104,7 +166,6 @@ public class MapFragment extends BaseFragment {
                     }
                 });
     }
-
 
     /**
      * 定位监听函数
@@ -176,7 +237,6 @@ public class MapFragment extends BaseFragment {
                 .observeOn(Schedulers.newThread())
                 .subscribe(new Subscriber<Result>() {
                     Result result = null;
-
                     @Override
                     public void onCompleted() {
                         String str;
@@ -184,6 +244,59 @@ public class MapFragment extends BaseFragment {
                             str = "未知异常";
                         } else if (result.getCode() == Constant.SUCCESS) {
                             str = "获取群组列表";
+                            mData.clear();
+                            Gson gson = new Gson();
+                            UnsortedGroup[] unsortedGroup = gson.fromJson(result.getModel().toString(), UnsortedGroup[].class);
+                            ArrayList<UnsortedGroup> ls = new ArrayList<>();
+                            for (UnsortedGroup ug : unsortedGroup) {
+                                ls.add(ug);
+                            }
+
+                            for (int i = 0; i < ls.size(); i++) {
+                                if (ls.get(i) == null) {
+                                    continue;
+                                }
+                                UnsortedGroup ug = ls.get(i);
+                                mGroups.add(ug.getGroupName());
+                                List<Item> items = new ArrayList<>();
+
+                                Item item = new Item();
+                                item.setId(ug.getFid());
+                                item.setName("user");
+                                item.setNote("......");
+                                item.setStatus(0);
+                                item.setUrl("http://");
+                                items.add(item);
+
+                                for (int j = i + 1; j < ls.size(); j++) {
+
+                                    if (ls.get(j) == null) {
+                                        continue;
+                                    }
+
+                                    if (ug.getGroupName().equals(ls.get(j).getGroupName())) {
+                                        item = new Item();
+                                        item.setId(ls.get(j).getFid());
+                                        item.setName("user");
+                                        item.setNote("......");
+                                        item.setStatus(1);
+                                        item.setUrl("http://");
+                                        items.add(item);
+                                        ls.set(j, null);
+                                    }
+                                }
+
+                                mData.add(items);
+                            }
+
+                            Activity a = getActivity();
+                            a.runOnUiThread(new Runnable() {
+                                @Override
+                                public void run() {
+
+                                }
+                            });
+
                         } else if (result.getCode() == Constant.FAIL) {
                             str = "更新失败";
                         } else if (result.getCode() == Constant.EXECUTING) {
@@ -215,64 +328,4 @@ public class MapFragment extends BaseFragment {
                 });
 
     }
-
-
-    @Override
-    public void onCreate(@Nullable Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        getGroupSvc();
-    }
-
-    @Nullable
-    @Override
-    public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-
-        View view = inflater.inflate(R.layout.fragment_map, container, false);
-        mMapView = (MapView) view.findViewById(R.id.map_view);
-        //init map location
-        initLocation();
-
-        return view;
-    }
-
-    @Override
-    public void onActivityCreated(@Nullable Bundle savedInstanceState) {
-        super.onActivityCreated(savedInstanceState);
-    }
-
-    @Override
-    public void onPause() {
-        mMapView.onPause();
-        super.onPause();
-    }
-
-    @Override
-    public void onResume() {
-        mMapView.onResume();
-        super.onResume();
-    }
-
-    @Override
-    protected String getTAG() {
-        return "Map Fragment";
-    }
-
-    @Override
-    public boolean setDebug() {
-        return true;
-    }
-
-
-    @Override
-    public void onDestroy() {
-        // 退出时销毁定位
-        mLocClient.stop();
-        // 关闭定位图层
-        mBaiduMap.setMyLocationEnabled(false);
-        mMapView.onDestroy();
-        mMapView = null;
-        super.onDestroy();
-    }
-
-
 }

@@ -12,24 +12,20 @@ import com.admin.ht.model.User;
 import com.admin.ht.utils.LogUtils;
 
 /**
- * Created by Spec_Inc on 4/15/2017.
+ * Fragment基类
+ *
+ * Created by Solstice on 4/15/2017.
  */
-
 public abstract class BaseFragment extends Fragment {
 
     protected String TAG = getTAG();
-
     /**
      * 设置控制台目标对象
      */
     protected abstract String getTAG();
-
     public abstract boolean setDebug();
-
     protected boolean isDebug = setDebug();
-
     protected SharedPreferences mPreferences = null;
-
     protected User mUser = null;
     /**
      *
@@ -81,7 +77,6 @@ public abstract class BaseFragment extends Fragment {
 
         return super.onCreateView(inflater, container, savedInstanceState);
     }
-
 
     @Override
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {

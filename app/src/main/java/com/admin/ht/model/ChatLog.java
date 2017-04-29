@@ -1,14 +1,14 @@
 package com.admin.ht.model;
 
 import org.greenrobot.greendao.annotation.Entity;
-
 import java.util.Date;
 import org.greenrobot.greendao.annotation.Generated;
 
 /**
- * Created by Spec_Inc on 3/12/2017.
+ * 聊天记录实体类
+ *
+ * Created by Solstice on 3/12/2017.
  */
-
 @Entity
 public class ChatLog {
     private int no;
