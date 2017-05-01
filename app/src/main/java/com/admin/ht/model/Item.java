@@ -1,5 +1,7 @@
 package com.admin.ht.model;
 
+import com.alibaba.fastjson.JSONObject;
+
 import java.io.Serializable;
 
 /**
@@ -61,5 +63,10 @@ public class Item implements Serializable{
 
     public void setNote(String note) {
         this.note = note;
+    }
+
+    @Override
+    public String toString() {
+        return JSONObject.toJSONString(this);
     }
 }

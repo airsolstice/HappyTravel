@@ -23,8 +23,14 @@ public class ChatLogHelper {
     public static List<ChatLog> queryAll(){
         return mDao.loadAll();
     }
-    public static List<ChatLog> queryById(int key){
+    public static List<ChatLog> queryByLogno(String key){
         return mDao.queryBuilder().
-                where(ChatLogDao.Properties.No.eq(key)).list();
+                where(ChatLogDao.Properties.Logno.eq(key)).list();
+    }
+
+    public static void delete(String key) {
+        for(ChatLog entity : queryByLogno(key)){
+            mDao.delete(entity);
+        }
     }
 }

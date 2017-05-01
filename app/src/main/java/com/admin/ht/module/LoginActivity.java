@@ -1,5 +1,6 @@
 package com.admin.ht.module;
 
+import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.drawable.Drawable;
@@ -10,8 +11,10 @@ import android.support.v4.content.ContextCompat;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.KeyEvent;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.Window;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.TextView;
@@ -23,6 +26,7 @@ import com.admin.ht.base.Constant;
 import com.admin.ht.model.Result;
 import com.admin.ht.model.User;
 import com.admin.ht.retro.ApiClient;
+import com.admin.ht.utils.KeyBoardUtils;
 import com.admin.ht.utils.LogUtils;
 import com.admin.ht.utils.NetUtils;
 import com.admin.ht.utils.StringUtils;
@@ -175,6 +179,7 @@ public class LoginActivity extends BaseActivity implements ChatBaseEvent{
                     int id = ClientCoreSDK.getInstance().getCurrentUserId();
                     Log.d(TAG, "登陆成功！" + id);
                     LogUtils.i(TAG, "登录成功，" + id);
+
                 }
                 else {
                     Log.d(TAG, "登陆失败，错误码=" + code);
@@ -238,6 +243,24 @@ public class LoginActivity extends BaseActivity implements ChatBaseEvent{
 
     }
 
+    @Override
+    public boolean dispatchTouchEvent(MotionEvent ev) {
+        if (ev.getAction() == MotionEvent.ACTION_DOWN) {
+            View v = getCurrentFocus();
+            if (KeyBoardUtils.isShouldHideInput(v, ev)) {
+                InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+                if (imm != null) {
+                    imm.hideSoftInputFromWindow(v.getWindowToken(), 0);
+                }
+            }
+            return super.dispatchTouchEvent(ev);
+        }
+        // 必不可少，否则所有的组件都不会有TouchEvent了
+        if (getWindow().superDispatchTouchEvent(ev)) {
+            return true;
+        }
+        return onTouchEvent(ev);
+    }
 
     @Override
     protected String getTAG() {

@@ -3,7 +3,9 @@ package com.admin.ht.retro;
 import com.admin.ht.model.Result;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+
 import java.util.concurrent.TimeUnit;
+
 import okhttp3.OkHttpClient;
 import retrofit2.Retrofit;
 import retrofit2.adapter.rxjava.RxJavaCallAdapterFactory;
@@ -15,7 +17,7 @@ import rx.Observable;
 
 /**
  * 后端服务API
- *
+ * <p>
  * Created by Solstice on 2016/11/18 0018.
  */
 public class ApiClient {
@@ -35,6 +37,7 @@ public class ApiClient {
         @FormUrlEncoded
         @POST("user/login")
         Observable<Result> loginIn(@Field("id") String id, @Field("pwd") String pwd);
+
         /**
          * 注册
          *
@@ -46,6 +49,7 @@ public class ApiClient {
         @FormUrlEncoded
         @POST("user/regist")
         Observable<Result> register(@Field("id") String id, @Field("email") String email, @Field("pwd") String pwd);
+
         /**
          * 重置密码
          *
@@ -56,6 +60,7 @@ public class ApiClient {
         @FormUrlEncoded
         @POST("user/retrievePwd")
         Observable<Result> retrievePwd(@Field("id") String id, @Field("pwd") String pwd);
+
         /**
          * 更新用户位置
          *
@@ -67,6 +72,7 @@ public class ApiClient {
         @FormUrlEncoded
         @POST("loc/update")
         Observable<Result> updatePosition(@Field("id") String id, @Field("lat") String lat, @Field("lng") String lng);
+
         /**
          * 获得群组列表
          *
@@ -76,6 +82,7 @@ public class ApiClient {
         @FormUrlEncoded
         @POST("group/list")
         Observable<Result> getGroupList(@Field("id") String id);
+
         /**
          * 通过id获取用户信息
          *
@@ -85,6 +92,7 @@ public class ApiClient {
         @FormUrlEncoded
         @POST("user/info/get")
         Observable<Result> getUserInfo(@Field("id") String id);
+
         /**
          * 通过chat id反向获取用户信息
          *
@@ -94,6 +102,17 @@ public class ApiClient {
         @FormUrlEncoded
         @POST("user/info/bychatid/get")
         Observable<Result> getUserInfoByChatId(@Field("chatId") int chatId);
+
+        /**
+         * 通过id获取chat id
+         *
+         * @param memberId
+         * @return
+         */
+        @FormUrlEncoded
+        @POST("chat/group/list")
+        Observable<Result> getChatGroupList(@Field("memberId") String memberId);
+
         /**
          * 通过id获取chat id
          *
@@ -105,6 +124,77 @@ public class ApiClient {
         Observable<Result> getChatId(@Field("id") String id);
 
         /**
+         * 搜索用户
+         *
+         * @param id
+         * @return
+         */
+        @FormUrlEncoded
+        @POST("user/search")
+        Observable<Result> searchUser(@Field("id") String id);
+
+        /**
+         * 删除好友关系
+         *
+         * @param id
+         * @return
+         */
+        @FormUrlEncoded
+        @POST("group/delete")
+        Observable<Result> deleteShip(@Field("id") String id, @Field("fid") String fid);
+
+        /**
+         * 搜索群
+         *
+         * @param groupId
+         * @return
+         */
+        @FormUrlEncoded
+        @POST("chat/group/search")
+        Observable<Result> searchGroup(@Field("groupId") String groupId);
+
+        /**
+         * 添加到分组
+         *
+         * @param id
+         * @return
+         */
+        @FormUrlEncoded
+        @POST("group/add")
+        Observable<Result> add(@Field("id") String id, @Field("fid") String fid, @Field("gname") String gname);
+
+        /**
+         * 添加到群组
+         *
+         * @return
+         */
+        @FormUrlEncoded
+        @POST("chat/group/invite")
+        Observable<Result> invite(@Field("groupId") int groupId,
+                                  @Field("memberId") String memberId, @Field("groupName") String groupName,
+                                  @Field("role") int role);
+
+        /**
+         * 添加到群组
+         *
+         * @return
+         */
+        @FormUrlEncoded
+        @POST("chat/group/create")
+        Observable<Result> create(@Field("memberId") String memberId, @Field("groupName") String groupName,
+                                  @Field("role") int role);
+
+        /**
+         * 退群
+         *
+         * @return
+         */
+        @FormUrlEncoded
+        @POST("chat/group/quit")
+        Observable<Result> quitGroup(@Field("groupId") int groupId, @Field("memberId") String memberId);
+
+
+        /**
          * 通过id获取用户行走轨迹
          *
          * @param id
@@ -113,6 +203,7 @@ public class ApiClient {
         @FormUrlEncoded
         @POST("loc/trace")
         Observable<Result> getTrace(@Field("id") String id);
+
         /**
          * 注销
          *
@@ -122,6 +213,7 @@ public class ApiClient {
         @FormUrlEncoded
         @PUT("user/loginOut")
         Observable<Result> loginOut(@Field("id") String id);
+
     }
 
     /**

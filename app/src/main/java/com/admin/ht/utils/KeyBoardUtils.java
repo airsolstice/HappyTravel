@@ -29,7 +29,7 @@ public class KeyBoardUtils {
 		}
 	}
 
-	private static boolean isShouldHideInput(View view, MotionEvent event) {
+	public static boolean isShouldHideInput(View view, MotionEvent event) {
 
 		if (view != null && (view instanceof EditText)) {
 			int[] leftTop = { 0, 0 };

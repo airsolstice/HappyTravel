@@ -112,7 +112,7 @@ public class ExpandAdapter extends BaseExpandableListAdapter {
         holder.mGroupName.setText(mGroups.get(groupPosition));
         holder.mGroupCount = (TextView) convertView
                 .findViewById(R.id.group_count);
-        holder.mGroupCount.setText("[" + mData.get(groupPosition).size() + "]");
+        holder.mGroupCount.setText( mData.get(groupPosition).size() + "");
         return convertView;
     }
 
@@ -154,7 +154,7 @@ public class ExpandAdapter extends BaseExpandableListAdapter {
                         if (result == null) {
                             str = "未知异常";
                         } else if (result.getCode() == Constant.SUCCESS) {
-                            str = "获取群组列表";
+                            str = "获取目标用户信息";
                             User user = ApiClient.gson.fromJson(result.getModel().toString().trim(), User.class);
                             mUserData.put(user.getId(), user);
                             if(user == null){

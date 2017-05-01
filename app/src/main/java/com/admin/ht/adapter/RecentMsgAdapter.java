@@ -7,6 +7,8 @@ import com.admin.ht.base.BaseAdapter;
 import com.admin.ht.base.ViewHolder;
 import com.admin.ht.model.RecentMsg;
 
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -31,7 +33,8 @@ public class RecentMsgAdapter extends BaseAdapter<RecentMsg> {
         holder.setImageURL(R.id.item_img, item.getUrl());
         //设置默认用户信息
         holder.setText(R.id.item_name, item.getName());
-        holder.setText(R.id.item_detail, item.getNote());
+        SimpleDateFormat format = new SimpleDateFormat("MM-dd hh:mm");
+        holder.setText(R.id.item_detail, format.format(new Date(System.currentTimeMillis())));
         holder.setText(R.id.item_badge, item.getCount()+ "");
     }
 }

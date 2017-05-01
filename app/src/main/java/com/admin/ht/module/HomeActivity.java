@@ -1,5 +1,6 @@
 package com.admin.ht.module;
 
+import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.RequiresApi;
@@ -12,7 +13,6 @@ import android.view.KeyEvent;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.Window;
-import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
@@ -20,6 +20,7 @@ import android.widget.Toast;
 import com.admin.ht.IM.IMClientManager;
 import com.admin.ht.R;
 import com.admin.ht.base.BaseActivity;
+import com.admin.ht.base.Constant;
 import com.admin.ht.model.User;
 import com.admin.ht.utils.LogUtils;
 import com.admin.ht.widget.NoScrollViewPager;
@@ -51,7 +52,7 @@ public class HomeActivity extends BaseActivity {
     TextView mTitle;
 
     private List<Fragment> mFrgs = new ArrayList<>();
-    private  long mExitTime ;
+    private  long mExitTime;
 
     @Override
     protected String getTAG() {
@@ -96,7 +97,7 @@ public class HomeActivity extends BaseActivity {
         mPager.setAdapter(adapter);
         mPager.setCurrentItem(0);
         mPager.setNoScroll(true);
-        mPager.setOffscreenPageLimit(4);
+        //mPager.setOffscreenPageLimit(4);
         mPager.addOnPageChangeListener(adapter);
     }
 
@@ -119,11 +120,11 @@ public class HomeActivity extends BaseActivity {
             public boolean onMenuItemClick(MenuItem item) {
                 switch (item.getItemId()){
                     case R.id.add_personal:
-
+                        startActivityForResult(new Intent(mContext, PersonalAdditionActivity.class), Constant.CODE);
                         break;
 
                     case R.id.add_group:
-
+                        startActivity(new Intent(mContext, GroupAdditionActivity.class));
                         break;
                 }
                 return true;

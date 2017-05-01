@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+
+
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="60dp"
+        android:background="#7fbdbdbd"
+        android:orientation="vertical">
+
+        <EditText
+            android:id="@+id/key_word_edit"
+            android:layout_width="match_parent"
+            android:layout_height="40dp"
+            android:layout_centerInParent="true"
+            android:inputType="phone"
+            android:layout_margin="10dp"
+            android:background="@drawable/rect_white_blue_border"
+            android:hint=" 输入群id"
+            android:padding="10dp" />
+
+        <ImageView
+            android:id="@+id/do_search"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:layout_alignParentRight="true"
+            android:layout_centerVertical="true"
+            android:layout_marginRight="10dp"
+            android:background="@mipmap/ic_empty" />
+    </RelativeLayout>
+
+    <TextView
+        android:id="@+id/tip"
+        android:layout_width="match_parent"
+        android:layout_margin="5dp"
+        android:gravity="center"
+        android:layout_height="wrap_content" />
+
+    <ListView
+        android:id="@+id/list_view"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:dividerHeight="1px" />
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="0.5dp"
+        android:layout_marginBottom="10dp"
+        android:layout_marginTop="10dp"
+        android:background="#bdbdbd" />
+
+    <TextView
+        android:id="@+id/create_group"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:text="找不到结果？那就创建一个吧！"
+        android:textColor="@color/blue"
+        android:textSize="15sp" />
+
+
+</LinearLayout>
+

@@ -2,13 +2,13 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.admin.ht">
 
-    <!--接收短信-->
+    <!-- 接收短信 -->
     <uses-permission android:name="android.permission.RECEIVE_SMS" />
-    <!--读取短信-->
+    <!-- 读取短信 -->
     <uses-permission android:name="android.permission.READ_SMS" />
-    <!--获取任务-->
+    <!-- 获取任务 -->
     <uses-permission android:name="android.permission.GET_TASKS" />
-    <!--获取设置-->
+    <!-- 获取设置 -->
     <uses-permission android:name="com.android.launcher.permission.READ_SETTINGS" />
     <!-- 这个权限用于进行网络定位 -->
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
@@ -40,10 +40,10 @@
     <application
         android:name=".base.BaseApplication"
         android:allowBackup="true"
+        android:hardwareAccelerated="true"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
         android:supportsRtl="true"
-        android:hardwareAccelerated="true"
         android:theme="@style/AppTheme">
         <meta-data
             android:name="com.baidu.lbsapi.API_KEY"
@@ -83,7 +83,7 @@
             android:name=".module.SingleChatActivity"
             android:theme="@style/AppTheme.NoActionBar" />
 
-        <!--mob短信平台相关UI-->
+        <!-- mob短信平台相关UI -->
         <activity
             android:name=".module.TestActivity"
             android:theme="@style/AppTheme.NoActionBar" />
@@ -92,6 +92,15 @@
             android:configChanges="keyboardHidden|orientation|screenSize"
             android:theme="@android:style/Theme.Translucent.NoTitleBar"
             android:windowSoftInputMode="stateHidden|adjustResize" />
+        <activity
+            android:name=".module.PersonalAdditionActivity"
+            android:theme="@style/AppTheme.NoActionBar" />
+        <activity
+            android:name=".module.GroupAdditionActivity"
+            android:theme="@style/AppTheme.NoActionBar" />
+        <activity
+            android:name=".module.GroupChatActivity"
+            android:theme="@style/AppTheme.NoActionBar" />
     </application>
 
 </manifest>

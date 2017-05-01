@@ -15,7 +15,7 @@ android {
     }
     //greendao配置
     greendao {
-        schemaVersion 3
+        schemaVersion 8
         daoPackage 'com.admin.ht.greendao' //自动生成的工具类的包名
         targetGenDir 'src/main/java' //路径
     }

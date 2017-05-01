@@ -6,7 +6,6 @@ import android.support.annotation.Nullable;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-
 import com.admin.ht.R;
 import com.admin.ht.base.BaseFragment;
 import com.admin.ht.base.Constant;
@@ -219,9 +218,7 @@ public class MapFragment extends BaseFragment {
         option.setScanSpan(3 * 60 * 1000);
         mLocClient.setLocOption(option);
         mLocClient.start();
-        LogUtils.e("Map", "starting location ....");
     }
-
 
     public void getGroupSvc(){
         if(mUser == null){
@@ -243,7 +240,7 @@ public class MapFragment extends BaseFragment {
                         if (result == null) {
                             str = "未知异常";
                         } else if (result.getCode() == Constant.SUCCESS) {
-                            str = "获取群组列表";
+                            str = "地图模块，获取群组列表";
                             mData.clear();
                             Gson gson = new Gson();
                             UnsortedGroup[] unsortedGroup = gson.fromJson(result.getModel().toString(), UnsortedGroup[].class);

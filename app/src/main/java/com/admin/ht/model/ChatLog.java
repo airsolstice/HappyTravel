@@ -3,6 +3,7 @@ package com.admin.ht.model;
 import org.greenrobot.greendao.annotation.Entity;
 import java.util.Date;
 import org.greenrobot.greendao.annotation.Generated;
+import org.greenrobot.greendao.annotation.Id;
 
 /**
  * 聊天记录实体类
@@ -11,17 +12,26 @@ import org.greenrobot.greendao.annotation.Generated;
  */
 @Entity
 public class ChatLog {
-    private int no;
+    @Id
+    private Long id;
+    private String logno;
     private String name;
     private String content;
     private String url;
     private int type;
     private Date date;
 
-    @Generated(hash = 1004125402)
-    public ChatLog(int no, String name, String content, String url, int type,
-            Date date) {
-        this.no = no;
+
+    @Generated(hash = 1994978153)
+    public ChatLog() {
+    }
+
+
+    @Generated(hash = 1981529424)
+    public ChatLog(Long id, String logno, String name, String content, String url,
+            int type, Date date) {
+        this.id = id;
+        this.logno = logno;
         this.name = name;
         this.content = content;
         this.url = url;
@@ -29,16 +39,21 @@ public class ChatLog {
         this.date = date;
     }
 
-    @Generated(hash = 1994978153)
-    public ChatLog() {
+
+    public Long getId() {
+        return id;
     }
 
-    public int getNo() {
-        return no;
+    public void setId(Long id) {
+        this.id = id;
     }
 
-    public void setNo(int no) {
-        this.no = no;
+    public String getLogno() {
+        return logno;
+    }
+
+    public void setLogno(String logno) {
+        this.logno = logno;
     }
 
     public String getName() {

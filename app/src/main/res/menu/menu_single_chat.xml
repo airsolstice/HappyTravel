@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <item
+        android:id="@+id/clean_log"
+        android:title="清除记录"/>
+
+    <item
+        android:id="@+id/delete_fri"
+        android:title="解除关系"/>
+
+</menu>

@@ -29,6 +29,6 @@ public class RecentMsgHelper {
     }
     public static List<RecentMsg> queryById(String key){
         return mDao.queryBuilder().
-                where(RecentMsgDao.Properties.Name.eq(key)).list();
+                where(RecentMsgDao.Properties.Owner.eq(key)).list();
     }
 }

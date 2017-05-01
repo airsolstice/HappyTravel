@@ -1,15 +1,17 @@
 package com.admin.ht.IM;
 
 import android.content.Context;
+
 import com.admin.ht.IM.impl.ChatBaseEventImpl;
 import com.admin.ht.IM.impl.ChatTransDataEventImpl;
 import com.admin.ht.IM.impl.MessageQoSEventImpl;
+
 import net.openmob.mobileimsdk.android.ClientCoreSDK;
 import net.openmob.mobileimsdk.android.conf.ConfigEntity;
 
 /**
  * IM客户端管理类
- *
+ * <p>
  * Created by Solstice on 4/27/2017.
  */
 public class IMClientManager {
@@ -45,7 +47,7 @@ public class IMClientManager {
             ConfigEntity.setSenseMode(ConfigEntity.SenseMode.MODE_10S);
 
             // 开启/关闭DEBUG信息输出
-	    	ClientCoreSDK.DEBUG = true;
+            ClientCoreSDK.DEBUG = false;
 
             // 进行核心库的初始化
             ClientCoreSDK.getInstance().init(this.context);

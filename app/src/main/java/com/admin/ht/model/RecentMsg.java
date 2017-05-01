@@ -17,6 +17,9 @@ public class RecentMsg {
     /*好友id，主键*/
     @Id
     private String id;
+    /*聊天id，用于区分每个用户的列表*/
+    private String owner;
+    private int no;
     /*好友昵称*/
     private String name;
     /*好友头像链接*/
@@ -31,9 +34,12 @@ public class RecentMsg {
 
     }
 
-    @Generated(hash = 1756061048)
-    public RecentMsg(String id, String name, String url, int count, String note) {
+    @Generated(hash = 416343097)
+    public RecentMsg(String id, String owner, int no, String name, String url,
+            int count, String note) {
         this.id = id;
+        this.owner = owner;
+        this.no = no;
         this.name = name;
         this.url = url;
         this.count = count;
@@ -46,6 +52,22 @@ public class RecentMsg {
 
     public void setId(String id) {
         this.id = id;
+    }
+
+    public String getOwner() {
+        return owner;
+    }
+
+    public void setOwner(String owner) {
+        this.owner = owner;
+    }
+
+    public int getNo() {
+        return no;
+    }
+
+    public void setNo(int no) {
+        this.no = no;
     }
 
     public String getName() {

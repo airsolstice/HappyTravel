@@ -35,12 +35,13 @@ public abstract class BaseFragment extends Fragment {
      * @param url
      * @return
      */
-    public boolean putUser(String id, String name, String email, String url){
+    public boolean putUser(String id, String name, String email, String url, int chatId){
         SharedPreferences.Editor editor = mPreferences.edit();
         editor.putString(BaseActivity.USER_ID, id);
         editor.putString(BaseActivity.USER_HEAD_URL, url);
         editor.putString(BaseActivity.USER_EMAIL, email);
         editor.putString(BaseActivity.USER_NAME, name);
+        editor.putInt(BaseActivity.USER_CHAT_ID, chatId);
         return editor.commit();
     }
 
@@ -53,7 +54,8 @@ public abstract class BaseFragment extends Fragment {
         String name = mPreferences.getString(BaseActivity.USER_NAME,"");
         String url = mPreferences.getString(BaseActivity.USER_HEAD_URL,BaseActivity.USER_DEFAULT_HEAD_URL);
         String email = mPreferences.getString(BaseActivity.USER_EMAIL, "");
-        User user = new User(id,name, email, url);
+        int chatId = mPreferences.getInt(BaseActivity.USER_CHAT_ID, 0);
+        User user = new User(id,name, email, url, chatId);
         return user;
     }
 
@@ -66,8 +68,8 @@ public abstract class BaseFragment extends Fragment {
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        mPreferences = getActivity().getSharedPreferences(BaseActivity.FILE_NAME, 0);
         if (isDebug) LogUtils.v(TAG, "onCreate");
+        mPreferences = getActivity().getSharedPreferences(BaseActivity.FILE_NAME, 0);
     }
 
     @Nullable
