@@ -30,6 +30,12 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
+    sourceSets{
+        main{
+            jniLibs.srcDirs = ['libs']
+        }
+    }
+
 }
 
 dependencies {
@@ -55,7 +61,7 @@ dependencies {
     compile 'com.squareup.okhttp3:okhttp:3.4.1'
     compile 'com.google.code.gson:gson:2.6.2'
     //百度地图LBS框架
-    compile files('libs/BaiduLBS_Android.jar')
+    //compile files('libs/BaiduLBS_Android.jar')
     //IM通信框架
     compile files('libs/httpmime-4.1.2.jar')
     compile files('libs/MobileIMSDK4a.jar')
@@ -73,4 +79,5 @@ dependencies {
     compile 'com.nostra13.universalimageloader:universal-image-loader:1.9.5'
     //SQLite数据库框架
     compile 'org.greenrobot:greendao:3.2.0'
+    compile files('libs/AMap3DMap_5.0.0_AMapNavi_5.0.1_AMapSearch_5.0.0_AMapLocation_3.4.0_20170427.jar')
 }

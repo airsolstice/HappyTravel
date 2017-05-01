@@ -10,7 +10,6 @@ import com.admin.ht.IM.IMClientManager;
 import com.admin.ht.greendao.DaoMaster;
 import com.admin.ht.greendao.DaoSession;
 import com.admin.ht.utils.ImageUtils;
-import com.baidu.mapapi.SDKInitializer;
 import com.facebook.drawee.backends.pipeline.Fresco;
 import net.openmob.mobileimsdk.android.core.LocalUDPDataSender;
 import java.util.LinkedList;
@@ -31,7 +30,6 @@ public class BaseApplication extends Application {
     public void onCreate() {
         super.onCreate();
         Fresco.initialize(this);
-        SDKInitializer.initialize(this);
         SMSSDK.initSDK(this, "1cfbdcca823d8", "94fe30c8bcd8d100387ca96c57dbc398");
         IMClientManager.getInstance(this).initMobileIMSDK();
         ImageUtils.initImageLoader(this);
