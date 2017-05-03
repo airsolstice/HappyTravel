@@ -1,5 +1,6 @@
 package com.admin.ht.base;
 
+import android.app.Activity;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.Bundle;
@@ -27,6 +28,9 @@ public abstract class BaseFragment extends Fragment {
     protected boolean isDebug = setDebug();
     protected SharedPreferences mPreferences = null;
     protected User mUser = null;
+
+    private Context mContext = null;
+
     /**
      *
      * @param id
@@ -58,11 +62,20 @@ public abstract class BaseFragment extends Fragment {
         User user = new User(id,name, email, url, chatId);
         return user;
     }
+    @Override
+    public Context getContext(){
+        if(mContext == null){
+            return BaseApplication.getInstance();
+        }
+        return mContext;
+    }
+
 
     @Override
     public void onAttach(Context context) {
         super.onAttach(context);
         if (isDebug) LogUtils.v(TAG, "onAttach");
+        mContext = context;
     }
 
     @Override

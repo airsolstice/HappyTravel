@@ -15,6 +15,7 @@ import android.graphics.Rect;
 import android.graphics.RectF;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
+import android.view.View;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -285,6 +286,16 @@ public class BitmapUtils {
                 .decodeStream(context.getResources().openRawResource(resId), null, options);
     }
 
+
+    public static Bitmap convertViewToBitmap(View view) {
+        view.measure(View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED), View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED));
+        view.layout(0, 0, view.getMeasuredWidth(), view.getMeasuredHeight());
+        //view.layout(0, 0, 120, 120);
+        view.buildDrawingCache();
+        Bitmap bitmap = view.getDrawingCache();
+        return bitmap;
+
+    }
 
 }
 

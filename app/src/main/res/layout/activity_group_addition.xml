@@ -6,7 +6,6 @@
     android:orientation="vertical">
 
 
-
     <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="60dp"
@@ -18,28 +17,34 @@
             android:layout_width="match_parent"
             android:layout_height="40dp"
             android:layout_centerInParent="true"
-            android:inputType="phone"
             android:layout_margin="10dp"
             android:background="@drawable/rect_white_blue_border"
-            android:hint=" 输入群id"
+            android:hint=" 搜索群"
+            android:inputType="phone"
             android:padding="10dp" />
 
         <ImageView
             android:id="@+id/do_search"
             android:layout_width="40dp"
             android:layout_height="40dp"
+            android:src="@mipmap/ic_search_48"
+            android:padding="5dp"
             android:layout_alignParentRight="true"
             android:layout_centerVertical="true"
             android:layout_marginRight="10dp"
-            android:background="@mipmap/ic_empty" />
+            android:background="@color/blue" />
     </RelativeLayout>
 
     <TextView
-        android:id="@+id/tip"
+        android:id="@+id/create_group"
         android:layout_width="match_parent"
-        android:layout_margin="5dp"
+        android:layout_height="wrap_content"
+        android:layout_margin="10dp"
         android:gravity="center"
-        android:layout_height="wrap_content" />
+        android:text="找不到结果？那就创建一个吧！"
+        android:textColor="@color/blue"
+        android:textSize="15sp" />
+
 
     <ListView
         android:id="@+id/list_view"
@@ -49,20 +54,19 @@
 
     <View
         android:layout_width="match_parent"
-        android:layout_height="0.5dp"
-        android:layout_marginBottom="10dp"
+        android:layout_marginLeft="10dp"
+        android:layout_marginRight="10dp"
         android:layout_marginTop="10dp"
-        android:background="#bdbdbd" />
+        android:layout_height="2px"
+        android:background="#7fbdbdbd" />
+
 
     <TextView
-        android:id="@+id/create_group"
+        android:id="@+id/tip"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:gravity="center"
-        android:text="找不到结果？那就创建一个吧！"
-        android:textColor="@color/blue"
-        android:textSize="15sp" />
-
+        android:layout_margin="5dp"
+        android:gravity="center" />
 
 </LinearLayout>
 

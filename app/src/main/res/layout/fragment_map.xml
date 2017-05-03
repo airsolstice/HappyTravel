@@ -23,7 +23,7 @@
             android:layout_height="match_parent"
             android:layout_weight="1"
             android:padding="10dp"
-            android:src="@mipmap/ic_empty"
+            android:src="@mipmap/ic_left_32"
             android:gravity="center_vertical|right"/>
         <TextView
             android:id="@+id/group_name"
@@ -43,10 +43,10 @@
             android:layout_weight="1"
             android:gravity="center_vertical|left"
             android:padding="10dp"
-            android:src="@mipmap/ic_empty"/>
+            android:src="@mipmap/ic_right_32"/>
 
         <TextView
-            android:id="@+id/group_chat"
+            android:id="@+id/chat"
             android:layout_width="1dp"
             android:layout_height="match_parent"
             android:layout_weight="1"

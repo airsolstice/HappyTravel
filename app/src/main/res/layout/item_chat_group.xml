@@ -4,12 +4,20 @@
     android:layout_height="wrap_content"
     android:orientation="horizontal" >
 
+    <ImageView
+        android:layout_width="30dp"
+        android:layout_height="30dp"
+        android:layout_marginLeft="10dp"
+        android:layout_gravity="center_vertical"
+        android:src="@mipmap/ic_group_48" />
+
+
     <TextView
         android:id="@+id/chat_group_name"
         android:layout_width="match_parent"
         android:layout_height="50dp"
         android:textAppearance="?android:attr/textAppearanceMedium"
-        android:layout_marginLeft="35dp"
+        android:layout_marginLeft="10dp"
         android:layout_marginRight="50dp"
         android:hint="name"
         android:gravity="center_vertical"
@@ -21,7 +29,7 @@
         android:layout_height="30dp"
         android:layout_gravity="center_vertical"
         android:layout_marginLeft="-50dp"
-        android:src="@mipmap/ic_empty" />
+        android:src="@mipmap/ic_item_add_blue_24" />
 
 
 </LinearLayout>

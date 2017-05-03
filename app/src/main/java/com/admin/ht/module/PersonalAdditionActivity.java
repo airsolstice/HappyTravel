@@ -66,6 +66,7 @@ public class PersonalAdditionActivity extends BaseActivity {
     public void listGroup() {
         String[] groups = mGroups.toArray(new String[mGroups.size()]);
         new  AlertDialog.Builder(mContext)
+                .setIcon(R.mipmap.ic_list_48)
                 .setTitle("分组列表" )
                 .setItems(groups,  null )
                 .setNegativeButton("返回" ,  null )
@@ -76,9 +77,7 @@ public class PersonalAdditionActivity extends BaseActivity {
     @OnClick(R.id.manage_group)
     public void addGroup(){
         final EditText et = new EditText(mContext);
-
         new AlertDialog.Builder(mContext).setTitle("输入分组名")
-                .setIcon(android.R.drawable.ic_dialog_info)
                 .setView(et)
                 .setPositiveButton("确定", new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int which) {
@@ -88,8 +87,7 @@ public class PersonalAdditionActivity extends BaseActivity {
                         }
                         else {
                             mGroups.add(input);
-                            Toast.makeText(getApplicationContext(), "新增分组:" + input
-                                    +"\n如不添加用户，则不分组不保存", Toast.LENGTH_LONG).show();
+                            Toast.makeText(getApplicationContext(), "新增分组:" + input, Toast.LENGTH_LONG).show();
                         }
                     }
                 })
@@ -126,19 +124,21 @@ public class PersonalAdditionActivity extends BaseActivity {
                         } else if (result.getCode() == Constant.SUCCESS) {
                             str = "搜索结果";
                             mData.clear();
-                            LogUtils.e(TAG, result.getModel().toString());
+                            //解析User的json数组
                             Type type = new TypeToken<ArrayList<User>>() {}.getType();
                             List<User> list = ApiClient.gson.fromJson(result.getModel().toString(), type);
+                            //获取当前用户信息
                             if (mHolderUser == null) {
                                 mHolderUser = getUser();
                             }
-
+                            //列表中删除当前自己的信息
                             for(int i = 0; i < list.size(); i++){
                                 if(list.get(i).getId().equals(mHolderUser.getId())){
                                     list.remove(i);
                                 }
                             }
                             mData.addAll(list);
+                            //将数据装入适配器
                             String[] groups = mGroups.toArray(new String[mGroups.size()]);
                             adapter = new ResultListAdapter(mContext, mData, mHolderUser.getId(), groups);
                             mResultList.setAdapter(adapter);
@@ -146,9 +146,11 @@ public class PersonalAdditionActivity extends BaseActivity {
                             if (mHolderUser == null) {
                                 mHolderUser = getUser();
                             }
+                            //提示结果信息
                             mTip.setText(String.format("搜索到%s个结果", mData.size()));
                         } else if (result.getCode() == Constant.FAIL) {
                             str = "搜索失败";
+                            //搜索失败，清空结果列表，通知刷新
                             mTip.setText("搜索不到结果，请输入有效手机号");
                             if(adapter != null){
                                 mData.clear();

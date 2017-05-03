@@ -1,11 +1,13 @@
 package com.admin.ht.adapter;
 
 import android.content.Context;
+import android.widget.TextView;
 
 import com.admin.ht.R;
 import com.admin.ht.base.BaseAdapter;
 import com.admin.ht.base.ViewHolder;
 import com.admin.ht.model.RecentMsg;
+import com.jauker.widget.BadgeView;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -35,6 +37,11 @@ public class RecentMsgAdapter extends BaseAdapter<RecentMsg> {
         holder.setText(R.id.item_name, item.getName());
         SimpleDateFormat format = new SimpleDateFormat("MM-dd hh:mm");
         holder.setText(R.id.item_detail, format.format(new Date(System.currentTimeMillis())));
-        holder.setText(R.id.item_badge, item.getCount()+ "");
+        holder.setText(R.id.item_badge, "");
+        TextView tv = holder.getView(R.id.item_badge);
+
+        BadgeView badgeView = new BadgeView(mContext);
+        badgeView.setTargetView(tv);
+        badgeView.setBadgeCount(item.getCount());
     }
 }

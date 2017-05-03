@@ -83,6 +83,7 @@ public class LoginActivity extends BaseActivity implements ChatBaseEvent{
     @OnClick(R.id.register)
     public void register() {
         startActivity(new Intent(mContext, RegisterActivity.class));
+        //startActivity(new Intent(mContext, TestActivity.class));
     }
 
     @OnClick(R.id.forgot_pwd)
@@ -274,7 +275,7 @@ public class LoginActivity extends BaseActivity implements ChatBaseEvent{
 
     @Override
     public boolean setDebug() {
-        return false;
+        return true;
     }
 
     @Override

@@ -25,15 +25,21 @@ public class BaseApplication extends Application {
 
     private List<Activity> mList = new LinkedList<>();
     private static DaoSession mDaoSession;
+    private static BaseApplication instance = null;
 
     @Override
     public void onCreate() {
         super.onCreate();
-        Fresco.initialize(this);
+        instance = this;
+        Fresco.initialize(getApplicationContext());
         SMSSDK.initSDK(this, "1cfbdcca823d8", "94fe30c8bcd8d100387ca96c57dbc398");
         IMClientManager.getInstance(this).initMobileIMSDK();
         ImageUtils.initImageLoader(this);
         setupDataBase();
+    }
+
+    public static BaseApplication getInstance(){
+        return instance;
     }
 
     private void setupDataBase() {

@@ -71,7 +71,7 @@ public class ApiClient {
          */
         @FormUrlEncoded
         @POST("loc/update")
-        Observable<Result> updatePosition(@Field("id") String id, @Field("lat") String lat, @Field("lng") String lng);
+        Observable<Result> updatePos(@Field("id") String id, @Field("lat") String lat, @Field("lng") String lng);
 
         /**
          * 获得群组列表
@@ -94,6 +94,15 @@ public class ApiClient {
         Observable<Result> getUserInfo(@Field("id") String id);
 
         /**
+         * 通过id获取用户marker
+         *
+         * @param id
+         * @return
+         */
+        @FormUrlEncoded
+        @POST("loc/marker")
+        Observable<Result> getUserMarker(@Field("id") String id);
+        /**
          * 通过chat id反向获取用户信息
          *
          * @param chatId
@@ -111,7 +120,7 @@ public class ApiClient {
          */
         @FormUrlEncoded
         @POST("chat/group/list")
-        Observable<Result> getChatGroupList(@Field("memberId") String memberId);
+        Observable<Result> getGroups(@Field("memberId") String memberId);
 
         /**
          * 通过id获取chat id
@@ -193,6 +202,14 @@ public class ApiClient {
         @POST("chat/group/quit")
         Observable<Result> quitGroup(@Field("groupId") int groupId, @Field("memberId") String memberId);
 
+        /**
+         * 获取群组成员
+         *
+         * @return
+         */
+        @FormUrlEncoded
+        @POST("chat/group/members")
+        Observable<Result> getMembers(@Field("groupId") int groupId);
 
         /**
          * 通过id获取用户行走轨迹

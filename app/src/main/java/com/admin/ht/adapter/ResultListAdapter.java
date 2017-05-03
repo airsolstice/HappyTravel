@@ -52,7 +52,7 @@ public class ResultListAdapter extends BaseAdapter<User> {
             public void onClick(View v) {
                 new  AlertDialog.Builder(mContext)
                         .setTitle("请选择分组" )
-                        //.setIcon(android.R.drawable.ic_dialog_info)
+                        .setIcon(R.mipmap.ic_list_48)
                         .setSingleChoiceItems(mGroups, 0, new  DialogInterface.OnClickListener() {
                                     public void onClick(DialogInterface dialog,  int  which) {
                                         add2Group(id, user.getId(), mGroups[which]);

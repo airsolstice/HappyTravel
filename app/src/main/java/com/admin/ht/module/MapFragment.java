@@ -1,58 +1,90 @@
 package com.admin.ht.module;
 
 import android.app.Activity;
+import android.graphics.Bitmap;
+import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.Drawable;
+import android.location.Location;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.util.Log;
+import android.util.LruCache;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
+import android.widget.TextView;
 
 import com.admin.ht.R;
+import com.admin.ht.base.BaseActivity;
 import com.admin.ht.base.BaseFragment;
-import com.admin.ht.base.Constant;
-import com.admin.ht.model.Item;
+import com.admin.ht.model.ChatMember;
+import com.admin.ht.model.MarkerInfo;
 import com.admin.ht.model.Result;
-import com.admin.ht.model.UnsortedGroup;
 import com.admin.ht.model.User;
 import com.admin.ht.retro.ApiClient;
-import com.admin.ht.utils.LocationUtils;
+import com.admin.ht.retro.ApiClientImpl;
+import com.admin.ht.retro.RetrofitCallbackListener;
+import com.admin.ht.utils.BitmapUtils;
+import com.admin.ht.utils.ImageUtils;
 import com.admin.ht.utils.LogUtils;
 import com.admin.ht.utils.StringUtils;
 import com.admin.ht.utils.ToastUtils;
-import com.amap.api.location.AMapLocation;
-import com.amap.api.location.AMapLocationClient;
-import com.amap.api.location.AMapLocationClientOption;
-import com.amap.api.location.AMapLocationListener;
 import com.amap.api.maps.AMap;
+import com.amap.api.maps.CameraUpdateFactory;
 import com.amap.api.maps.MapView;
+import com.amap.api.maps.model.BitmapDescriptor;
+import com.amap.api.maps.model.BitmapDescriptorFactory;
+import com.amap.api.maps.model.LatLng;
+import com.amap.api.maps.model.Marker;
+import com.amap.api.maps.model.MarkerOptions;
 import com.amap.api.maps.model.MyLocationStyle;
-import com.google.gson.Gson;
+import com.facebook.drawee.interfaces.DraweeController;
+import com.facebook.drawee.view.SimpleDraweeView;
+import com.google.gson.reflect.TypeToken;
+import com.nostra13.universalimageloader.core.ImageLoader;
+import com.nostra13.universalimageloader.core.assist.ImageSize;
+import com.nostra13.universalimageloader.core.listener.SimpleImageLoadingListener;
 
+import net.openmob.mobileimsdk.android.event.ChatTransDataEvent;
+import net.openmob.mobileimsdk.android.event.MessageQoSEvent;
+import net.openmob.mobileimsdk.server.protocal.Protocal;
+
+import java.lang.reflect.Type;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
-
-import rx.Subscriber;
-import rx.schedulers.Schedulers;
+import java.util.Map;
 
 /**
- * 地图碎片类
- *
+ * 地图业务类
+ * <p>
  * Created by Solstice on 3/12/2017.
  */
-public class MapFragment extends BaseFragment {
+public class MapFragment extends BaseFragment
+        implements View.OnClickListener, ChatTransDataEvent, MessageQoSEvent, AMap.OnMyLocationChangeListener {
 
-    private  AMapLocationClient mLocationClient = null;
     private MapView mMapView;
+    private TextView mGroupNameView;
     private AMap aMap;
-    private List<List<Item>> mData = new ArrayList<>();
-    private List<String> mGroups = new ArrayList<>();
-
-
+    private int index = 0;
+    private List<ChatMember> mGroupData = new ArrayList<>();
+    private List<ChatMember> mData = new ArrayList<>();
+    private List<Marker> mMarkerData = new ArrayList<>();
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        getGroupSvc();
+        //注册IM监听回调
+        //ClientCoreSDK.getInstance().setChatTransDataEvent(this);
+        //ClientCoreSDK.getInstance().setMessageQoSEvent(this);
+
+        //配置当前用户信息
+        if (mUser == null) {
+            mUser = getUser();
+        }
+
     }
 
     @Nullable
@@ -61,6 +93,11 @@ public class MapFragment extends BaseFragment {
 
         View view = inflater.inflate(R.layout.fragment_map, container, false);
         mMapView = (MapView) view.findViewById(R.id.map_view);
+        mGroupNameView = (TextView) view.findViewById(R.id.group_name);
+        ImageView left = (ImageView) view.findViewById(R.id.left_move);
+        left.setOnClickListener(this);
+        ImageView right = (ImageView) view.findViewById(R.id.right_move);
+        right.setOnClickListener(this);
 
         return view;
     }
@@ -69,81 +106,54 @@ public class MapFragment extends BaseFragment {
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
         mMapView.onCreate(savedInstanceState);
+        //获取地图对象
         aMap = mMapView.getMap();
+        //初始化地图自带的定位配置
         initLocation();
-    }
 
+    }
 
     private void initLocation() {
         MyLocationStyle myLocationStyle = new MyLocationStyle();
         //连续定位、且将视角移动到地图中心点，定位点依照设备方向旋转，并且会跟随设备移动。（1秒1次定位）如果不设置myLocationType，默认也会执行此种模式。
         myLocationStyle.myLocationType(MyLocationStyle.LOCATION_TYPE_LOCATION_ROTATE);
         //设置连续定位模式下的定位间隔，只在连续定位模式下生效，单次定位模式下不会生效。单位为毫秒。
-        myLocationStyle.interval(1000*60*3);
+        myLocationStyle.interval(1000 * 60 * 3);
         //设置定位蓝点的Style
         aMap.setMyLocationStyle(myLocationStyle);
-        // 设置默认定位按钮是否显示，非必需设置。
+        //设置缩放级别
+        aMap.moveCamera(CameraUpdateFactory.zoomTo(15));
+        //设置默认定位按钮是否显示，非必需设置。
         aMap.getUiSettings().setMyLocationButtonEnabled(true);
-        // 设置为true表示启动显示定位蓝点，false表示隐藏定位蓝点并不进行定位，默认是false。
+        //设置为true表示启动显示定位蓝点，false表示隐藏定位蓝点并不进行定位，默认是false。
         aMap.setMyLocationEnabled(true);
-
-        //初始化client
-        mLocationClient = new AMapLocationClient(getActivity());
-        //设置定位参数
-        mLocationClient.setLocationOption(getDefaultOption());
-        //设置定位监听
-        mLocationClient.setLocationListener(locationListener);
-        //启动定位
-        mLocationClient.startLocation();
-        
-    }
-    AMapLocationListener locationListener = new AMapLocationListener() {
-        @Override
-        public void onLocationChanged(AMapLocation loc) {
-            if (null != loc) {
-                String result = LocationUtils.getLocationStr(loc);
-                LogUtils.e(TAG, result);
-                putUserLoc(loc.getLatitude(), loc.getLongitude());
-
-            } else {
-                LogUtils.e(TAG, "定位失败，loc is null");
-            }
-        }
-    };
-
-
-    private void destroyLocation(){
-        if (null != mLocationClient) {
-            mLocationClient.onDestroy();
-            mLocationClient = null;
-        }
+        //设置定位回调监听
+        aMap.setOnMyLocationChangeListener(this);
     }
 
-    private AMapLocationClientOption getDefaultOption(){
-        AMapLocationClientOption mOption = new AMapLocationClientOption();
-        //可选，设置定位模式，可选的模式有高精度、仅设备、仅网络。默认为高精度模式
-        mOption.setLocationMode(AMapLocationClientOption.AMapLocationMode.Hight_Accuracy);
-        //可选，设置是否gps优先，只在高精度模式下有效。默认关闭
-        mOption.setGpsFirst(false);
-        //可选，设置网络请求超时时间。默认为30秒。在仅设备模式下无效
-        mOption.setHttpTimeOut(30000);
-        //可选，设置定位间隔。默认为2秒
-        mOption.setInterval(1000*60);
-        //可选，设置是否返回逆地理地址信息。默认是true
-        mOption.setNeedAddress(true);
-        //可选，设置是否单次定位。默认是false
-        mOption.setOnceLocation(false);
-        //可选，设置是否等待wifi刷新，默认为false.如果设置为true,会自动变为单次定位，持续定位时不要使用
-        mOption.setOnceLocationLatest(false);
-        //可选， 设置网络请求的协议。可选HTTP或者HTTPS。默认为HTTP
-        AMapLocationClientOption.setLocationProtocol(AMapLocationClientOption.AMapLocationProtocol.HTTP);
-        //可选，设置是否使用传感器。默认是false
-        mOption.setSensorEnable(false);
-        //可选，设置是否开启wifi扫描。默认为true，如果设置为false会同时停止主动刷新，停止以后完全依赖于系统刷新，定位位置可能存在误差
-        mOption.setWifiScan(true);
-        //可选，设置是否使用缓存定位，默认为true
-        mOption.setLocationCacheEnable(true);
-        return mOption;
+    public void addCustomMarker(final MarkerInfo info) {
+        final View v = View.inflate(getActivity(), R.layout.view_marker, null);
+        final SimpleDraweeView icon = (SimpleDraweeView) v.findViewById(R.id.icon);
+        int rw = icon.getMeasuredWidth();
+        int rh = icon.getMeasuredHeight();
+        ImageSize targetSize = new ImageSize(rw, rh);
+        ImageLoader.getInstance().loadImage(info.getUrl(), targetSize, ImageUtils.getDisplayImageOptions(),
+                new SimpleImageLoadingListener() {
+                    @Override
+                    public void onLoadingComplete(String imageUri, View view, Bitmap loadedImage) {
+                        loadedImage = BitmapUtils.makeRoundCorner(loadedImage);
+                        loadedImage = BitmapUtils.zoomBitmap(loadedImage, 50, 50);
+                        icon.setImageBitmap(loadedImage);
+                        Bitmap bitmap = BitmapUtils.convertViewToBitmap(v);
+                        Marker marker = aMap.addMarker(new MarkerOptions().anchor(0.5f, 1)
+                                .position(new LatLng(info.getLat(), info.getLng()))
+                                .title(info.getName())
+                                .snippet("你好！这是地图定位演示")
+                                .icon(BitmapDescriptorFactory.fromBitmap(bitmap)));
+                        mMarkerData.add(marker);
+
+                    }
+                });
     }
 
     @Override
@@ -156,6 +166,32 @@ public class MapFragment extends BaseFragment {
     public void onResume() {
         super.onResume();
         mMapView.onResume();
+        if (mUser == null) {
+            mUser = getUser();
+        }
+        ApiClientImpl.getGroupsSvc(new RetrofitCallbackListener() {
+            @Override
+            public void receive(Result result) {
+                mGroupData.clear();
+                Type type = new TypeToken<ArrayList<ChatMember>>() {
+                }.getType();
+                List<ChatMember> list = ApiClient.gson.fromJson(result.getModel().toString(), type);
+                mGroupData.addAll(list);
+                if (mGroupData.size() == 0) {
+                    return;
+                }
+
+                Activity a = (Activity) getContext();
+                a.runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        mGroupNameView.setText(mGroupData.get(index).getGroupName());
+                        getMembers(index);
+                    }
+                });
+            }
+        }, mUser.getId());
+
     }
 
     @Override
@@ -168,7 +204,6 @@ public class MapFragment extends BaseFragment {
     public void onDestroy() {
         super.onDestroy();
         mMapView.onDestroy();
-        destroyLocation();
     }
 
     @Override
@@ -182,171 +217,125 @@ public class MapFragment extends BaseFragment {
     }
 
 
-    public void getGroupSvc(){
-        if(mUser == null){
-            mUser = getUser();
-        }
-        if (isDebug) {
-            LogUtils.e(TAG, mUser.toString());
-        }
+    public void getMembers(int index){
+        ApiClientImpl.getMembersSvc(new RetrofitCallbackListener() {
+            @Override
+            public void receive(Result result) {
+                mData.clear();
+                Type type = new TypeToken<ArrayList<ChatMember>>() {
+                }.getType();
+                List<ChatMember> list = ApiClient.gson.fromJson(result.getModel().toString(), type);
+                mData.addAll(list);
 
-        ApiClient.service.getGroupList(mUser.getId())
-                .subscribeOn(Schedulers.newThread())
-                //.observeOn(AndroidSchedulers.mainThread())
-                .observeOn(Schedulers.newThread())
-                .subscribe(new Subscriber<Result>() {
-                    Result result = null;
-                    @Override
-                    public void onCompleted() {
-                        String str;
-                        if (result == null) {
-                            str = "未知异常";
-                        } else if (result.getCode() == Constant.SUCCESS) {
-                            str = "地图模块，获取群组列表";
-                            mData.clear();
-                            Gson gson = new Gson();
-                            UnsortedGroup[] unsortedGroup = gson.fromJson(result.getModel().toString(), UnsortedGroup[].class);
-                            ArrayList<UnsortedGroup> ls = new ArrayList<>();
-                            for (UnsortedGroup ug : unsortedGroup) {
-                                ls.add(ug);
-                            }
-
-                            for (int i = 0; i < ls.size(); i++) {
-                                if (ls.get(i) == null) {
-                                    continue;
-                                }
-                                UnsortedGroup ug = ls.get(i);
-                                mGroups.add(ug.getGroupName());
-                                List<Item> items = new ArrayList<>();
-
-                                Item item = new Item();
-                                item.setId(ug.getFid());
-                                item.setName("user");
-                                item.setNote("......");
-                                item.setStatus(0);
-                                item.setUrl("http://");
-                                items.add(item);
-
-                                for (int j = i + 1; j < ls.size(); j++) {
-
-                                    if (ls.get(j) == null) {
-                                        continue;
-                                    }
-
-                                    if (ug.getGroupName().equals(ls.get(j).getGroupName())) {
-                                        item = new Item();
-                                        item.setId(ls.get(j).getFid());
-                                        item.setName("user");
-                                        item.setNote("......");
-                                        item.setStatus(1);
-                                        item.setUrl("http://");
-                                        items.add(item);
-                                        ls.set(j, null);
-                                    }
-                                }
-
-                                mData.add(items);
-                            }
-
-                            Activity a = getActivity();
-                            a.runOnUiThread(new Runnable() {
-                                @Override
-                                public void run() {
-
-                                }
-                            });
-
-                        } else if (result.getCode() == Constant.FAIL) {
-                            str = "更新失败";
-                        } else if (result.getCode() == Constant.EXECUTING) {
-                            str = "服务器繁忙";
-                        } else {
-                            str = "未知异常";
+                for (ChatMember member : mData) {
+                    ApiClientImpl.getUserMarkerSvc(new RetrofitCallbackListener() {
+                        @Override
+                        public void receive(Result result) {
+                            MarkerInfo info = ApiClient.gson.fromJson(result.getModel().toString(),
+                                    MarkerInfo.class);
+                            addCustomMarker(info);
                         }
+                    }, member.getMemberId());
+                }
 
-                        if(isDebug){
-                            LogUtils.i(TAG, str);
-                        }
-                    }
 
-                    @Override
-                    public void onNext(Result result) {
-                        this.result = result;
-                        if (isDebug) {
-                            LogUtils.i(TAG, result.toString());
-                        }
-                    }
-
-                    @Override
-                    public void onError(Throwable e) {
-                        if(isDebug){
-                            LogUtils.i(TAG, e.toString());
-                        }
-                        e.printStackTrace();
-                    }
-                });
+            }
+        }, mGroupData.get(index).getGroupId());
 
     }
 
+    @Override
+    public void onClick(View v) {
 
+        switch (v.getId()) {
+            case R.id.left_move:
+                //清除旧的用户数据
+                for(Marker m : mMarkerData){
+                    m.remove();
+                }
+                mMarkerData.clear();
+                //移动指针
+                if (--index < 0) {
+                    index = mGroupData.size() - 1;
+                }
+                //设置群组名
+                mGroupNameView.setText(mGroupData.get(index).getGroupName());
+                //获取成员信息，并配置marker对象到地图图层
+                getMembers(index);
+                break;
+            case R.id.right_move:
+                //清除旧的用户数据
+                for(Marker m : mMarkerData){
+                    m.remove();
+                }
+                mMarkerData.clear();
+                //移动指针
+                if (++index >= mGroupData.size()) {
+                    index = 0;
+                }
+                //设置群组名
+                mGroupNameView.setText(mGroupData.get(index).getGroupName());
+                //获取成员信息，并配置marker对象到地图图层
+                getMembers(index);
+                break;
 
-        public void putUserLoc(double lat, double lng) {
+            case R.id.chat:
+                break;
+        }
+
+    }
+
+    @Override
+    public void onMyLocationChange(Location location) {
+        if (location == null) {
+            LogUtils.e(TAG, "location为空");
+            return;
+        }
+        LogUtils.e(TAG, "更新位置");
+
         if (mUser == null) {
             mUser = getUser();
         }
-
         if (StringUtils.isEmpty(mUser.getId()) || !StringUtils.isPhone(mUser.getId())) {
             if (isDebug) {
-                LogUtils.e(TAG, "上传用户位置失败");
+                LogUtils.e(TAG, "更新位置失败");
             }
-            ToastUtils.showShort(getContext(), "上传用户位置失败");
+            ToastUtils.showShort(getContext(), "位置更新失败");
             return;
         }
-
-        updateSvc(mUser, lat, lng);
+        ApiClientImpl.updatePosSvc(null, mUser.getId(),
+                new LatLng(location.getLatitude(), location.getLongitude()));
     }
 
-    public void updateSvc(User user, double lat, double lng) {
+    @Override
+    public void onTransBuffer(String fingerPrintOfProtocol, int userId, String content) {
+        Log.d(TAG, "收到来自用户[" + userId + "]的消息:" + content + "," + fingerPrintOfProtocol);
 
-        ApiClient.service.updatePosition(user.getId(), String.valueOf(lat), String.valueOf(lng))
-                .subscribeOn(Schedulers.newThread())
-                //.observeOn(AndroidSchedulers.mainThread())
-                .observeOn(Schedulers.newThread())
-                .subscribe(new Subscriber<Result>() {
-                    Result result = null;
-
-                    @Override
-                    public void onCompleted() {
-                        String str;
-                        if (result == null) {
-                            str = "未知异常";
-                        } else if (result.getCode() == Constant.SUCCESS) {
-                            str = "用户位置更新成功";
-                        } else if (result.getCode() == Constant.FAIL) {
-                            str = "更新失败";
-                        } else if (result.getCode() == Constant.EXECUTING) {
-                            str = "服务器繁忙";
-                        } else {
-                            str = "未知异常";
-                        }
-
-                        LogUtils.i(TAG, str);
-                    }
-
-                    @Override
-                    public void onNext(Result result) {
-                        if (isDebug) {
-                            LogUtils.i(TAG, result.toString());
-                        }
-                        this.result = result;
-                    }
-
-                    @Override
-                    public void onError(Throwable e) {
-                        LogUtils.i(TAG, e.toString());
-                        e.printStackTrace();
-                    }
-                });
+        User user = new User();
+        user.setChatId(userId);
+        user.setNote(content);
+        //保存信息到本地SQLite数据库
+        //saveMsg(user);
+        //在地图上展示消息
+        //displayMsgInMarker(userId, content);
     }
+
+    @Override
+    public void onErrorResponse(int errorCode, String errorMsg) {
+        Log.d(TAG, "收到服务端错误消息，errorCode=" + errorCode + ", errorMsg=" + errorMsg);
+    }
+
+    @Override
+    public void messagesLost(ArrayList<Protocal> lostMessages) {
+        Log.d(TAG, "收到系统的未实时送达事件通知，当前共有" + lostMessages.size() + "个包QoS保证机制结束，判定为【无法实时送达】！");
+    }
+
+    @Override
+    public void messagesBeReceived(String theFingerPrint) {
+        if (theFingerPrint != null) {
+            Log.d(TAG, "收到对方已收到消息事件的通知，fp=" + theFingerPrint);
+        }
+    }
+
 
 }

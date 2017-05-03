@@ -28,7 +28,6 @@ import com.admin.ht.retro.ApiClient;
 import com.admin.ht.utils.LogUtils;
 import com.google.gson.reflect.TypeToken;
 
-import net.openmob.mobileimsdk.android.ClientCoreSDK;
 import net.openmob.mobileimsdk.android.event.ChatTransDataEvent;
 import net.openmob.mobileimsdk.android.event.MessageQoSEvent;
 import net.openmob.mobileimsdk.server.protocal.Protocal;
@@ -125,7 +124,7 @@ public class GroupFragment extends BaseFragment
 
 
     private void listChatGroupSvc(String id) {
-        ApiClient.service.getChatGroupList(id)
+        ApiClient.service.getGroups(id)
                 .subscribeOn(Schedulers.newThread())
                 //.observeOn(AndroidSchedulers.mainThread())
                 .observeOn(Schedulers.newThread())

@@ -47,7 +47,7 @@
         android:layout_height="30dp"
         android:layout_gravity="center_vertical"
         android:layout_marginLeft="-50dp"
-        android:src="@mipmap/ic_empty" />
+        android:src="@mipmap/ic_item_add_blue_24" />
 
 
 

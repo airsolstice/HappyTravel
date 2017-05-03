@@ -11,6 +11,7 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 
 import com.admin.ht.R;
+import com.jauker.widget.BadgeView;
 
 /**
  * 联系人碎片类
@@ -31,6 +32,9 @@ public class ContactFragment extends Fragment {
         TextView friBtn = (TextView) v.findViewById(R.id.fri);
         TextView groupBtn = (TextView) v.findViewById(R.id.group);
         TextView msgBtn = (TextView) v.findViewById(R.id.msg);
+        BadgeView badgeView = new BadgeView(getContext());
+        badgeView.setTargetView(msgBtn);
+        badgeView.setBadgeCount(10);
         friBtn.setOnClickListener(mListener);
         groupBtn.setOnClickListener(mListener);
         msgBtn.setOnClickListener(mListener);

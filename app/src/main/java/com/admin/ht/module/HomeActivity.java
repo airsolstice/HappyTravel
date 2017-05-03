@@ -1,6 +1,7 @@
 package com.admin.ht.module;
 
 import android.content.Intent;
+import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.RequiresApi;
@@ -9,6 +10,7 @@ import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentStatePagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.support.v7.widget.PopupMenu;
+import android.util.Log;
 import android.view.KeyEvent;
 import android.view.MenuItem;
 import android.view.View;
@@ -23,7 +25,12 @@ import com.admin.ht.base.BaseActivity;
 import com.admin.ht.base.Constant;
 import com.admin.ht.model.User;
 import com.admin.ht.utils.LogUtils;
+import com.admin.ht.utils.ToastUtils;
 import com.admin.ht.widget.NoScrollViewPager;
+
+import net.openmob.mobileimsdk.android.ClientCoreSDK;
+import net.openmob.mobileimsdk.android.core.LocalUDPDataSender;
+
 import java.util.ArrayList;
 import java.util.List;
 import butterknife.Bind;
@@ -110,6 +117,57 @@ public class HomeActivity extends BaseActivity {
     public void go2HomePage() {
         mPager.setCurrentItem(0);
     }
+
+    @OnClick(R.id.search)
+    public void doLogout() {
+
+        //在连不上IM服务器时的异常处理
+        if(!ClientCoreSDK.getInstance().isLocalDeviceNetworkOk()){
+            ToastUtils.showShort(mContext, "网络异常，请重新启动应用");
+            startActivity(new Intent(mContext, LoginActivity.class));
+            finish();
+            return;
+        }
+
+        if(!ClientCoreSDK.getInstance().isLoginHasInit()){
+            ToastUtils.showShort(mContext, "登录异常，请重新启动应用");
+            startActivity(new Intent(mContext, LoginActivity.class));
+            finish();
+            return;
+        }
+
+        if(!ClientCoreSDK.getInstance().isConnectedToServer()){
+            ToastUtils.showShort(mContext, "IM服务器异常，请重新启动应用");
+            startActivity(new Intent(mContext, LoginActivity.class));
+            finish();
+            return;
+        }
+
+        new AsyncTask<Object, Integer, Integer>(){
+            @Override
+            protected Integer doInBackground(Object... params) {
+                int code = -1;
+                try{
+                    code = LocalUDPDataSender.getInstance(mContext).sendLoginout();
+                }
+                catch (Exception e){
+                    Log.w(TAG, e);
+                }
+
+                return code;
+            }
+
+            @Override
+            protected void onPostExecute(Integer code) {
+                startActivity(new Intent(mContext, LoginActivity.class));
+                finish();
+            }
+        }.execute();
+
+    }
+
+
+
 
     @OnClick(R.id.add)
     public void getMenu(){
