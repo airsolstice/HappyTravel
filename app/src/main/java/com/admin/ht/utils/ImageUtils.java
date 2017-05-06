@@ -20,7 +20,7 @@ public class ImageUtils {
 
     public static void initImageLoader(Context context) {
         // This configuration tuning is custom. You can tune every option, you may tune some of them,
-        // or you can create default configuration by
+        // or you can createGroup default configuration by
         //  ImageLoaderConfiguration.createDefault(this);
         // method.
         ImageLoaderConfiguration.Builder config = new ImageLoaderConfiguration.Builder(context);

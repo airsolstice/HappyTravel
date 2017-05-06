@@ -6,6 +6,7 @@ import android.os.Bundle;
 
 import com.admin.ht.R;
 import com.admin.ht.base.BaseActivity;
+import com.admin.ht.base.Constant;
 import com.admin.ht.utils.LocationUtils;
 import com.admin.ht.utils.LogUtils;
 import com.amap.api.location.AMapLocation;
@@ -29,7 +30,7 @@ public class TestActivity extends Activity {
 
         SimpleDraweeView view = (SimpleDraweeView) this.findViewById(R.id.icon);
 
-        Uri uri = Uri.parse(BaseActivity.USER_DEFAULT_HEAD_URL);
+        Uri uri = Uri.parse(Constant.USER_DEFAULT_HEAD_URL);
         view.setImageURI(uri);
 
        // initLocation();

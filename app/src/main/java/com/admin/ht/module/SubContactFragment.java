@@ -25,10 +25,11 @@ import com.admin.ht.model.Result;
 import com.admin.ht.model.UnsortedGroup;
 import com.admin.ht.model.User;
 import com.admin.ht.retro.ApiClient;
+import com.admin.ht.retro.ApiClientImpl;
+import com.admin.ht.retro.RetrofitCallbackListener;
 import com.admin.ht.utils.LogUtils;
 import com.google.gson.reflect.TypeToken;
 
-import net.openmob.mobileimsdk.android.ClientCoreSDK;
 import net.openmob.mobileimsdk.android.event.ChatTransDataEvent;
 import net.openmob.mobileimsdk.android.event.MessageQoSEvent;
 import net.openmob.mobileimsdk.server.protocal.Protocal;
@@ -82,7 +83,57 @@ public class SubContactFragment extends BaseFragment implements
     @Override
     public void onResume() {
         super.onResume();
-        listGroupSvc(mUser.getId());
+        ApiClientImpl.getGroupsSvc(new RetrofitCallbackListener() {
+            @Override
+            public void receive(Result result) {
+                mData.clear();
+                mGroupData.clear();
+                Type type = new TypeToken<ArrayList<UnsortedGroup>>() {}.getType();
+                List<UnsortedGroup> list = ApiClient.gson.fromJson(result.getModel().toString(), type);
+
+                for (int i = 0; i < list.size(); i++) {
+                    if (list.get(i) == null) {
+                        continue;
+                    }
+                    UnsortedGroup group = list.get(i);
+                    mGroupData.add(group.getGroupName());
+                    List<Item> items = new ArrayList<>();
+
+                    Item item = new Item();
+                    item.setId(group.getFid());
+                    items.add(item);
+
+                    for (int j = i + 1; j < list.size(); j++) {
+
+                        if (list.get(j) == null) {
+                            continue;
+                        }
+
+                        if (group.getGroupName().equals(list.get(j).getGroupName())) {
+                            item = new Item();
+                            item.setId(list.get(j).getFid());
+                            items.add(item);
+                            list.set(j, null);
+                        }
+                    }
+                    mData.add(items);
+                }
+
+                Activity a = (Activity) getContext();
+                a.runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        mAdapter = new ExpandAdapter(getActivity(), mGroupData, mData);
+                        mListView.setAdapter(mAdapter);
+                        SharedPreferences.Editor editor = mPreferences.edit();
+                        LogUtils.e(TAG, mGroupData.size() + "");
+                        editor.putString(Constant.GROUP_NAME_LIST, mGroupData.toString());
+                        editor.commit();
+                    }
+                });
+            }
+        }, mUser.getId());
+
     }
 
     @Override
@@ -99,105 +150,10 @@ public class SubContactFragment extends BaseFragment implements
     public boolean onChildClick(ExpandableListView parent, View v, int groupPosition, int childPosition, long id) {
         Item entity = mAdapter.getChild(groupPosition, childPosition);
         Intent intent = new Intent(getActivity(), SingleChatActivity.class);
-        intent.putExtra(BaseActivity.TARGET_USER, entity);
+        intent.putExtra(Constant.TARGET_USER, entity);
         getActivity().startActivity(intent);
 
         return true;
-    }
-
-    private void listGroupSvc(String id) {
-        ApiClient.service.getGroupList(id)
-                .subscribeOn(Schedulers.newThread())
-                //.observeOn(AndroidSchedulers.mainThread())
-                .observeOn(Schedulers.newThread())
-                .subscribe(new Subscriber<Result>() {
-                    Result result = null;
-
-                    @Override
-                    public void onCompleted() {
-                        String str;
-                        if (result == null) {
-                            str = "未知异常";
-                        } else if (result.getCode() == Constant.SUCCESS) {
-                            str = "获取群组列表";
-                            mData.clear();
-                            mGroupData.clear();
-                            Type type = new TypeToken<ArrayList<UnsortedGroup>>() {}.getType();
-                            List<UnsortedGroup> list = ApiClient.gson.fromJson(result.getModel().toString(), type);
-
-                            for (int i = 0; i < list.size(); i++) {
-                                if (list.get(i) == null) {
-                                    continue;
-                                }
-                                UnsortedGroup group = list.get(i);
-                                mGroupData.add(group.getGroupName());
-                                List<Item> items = new ArrayList<>();
-
-                                Item item = new Item();
-                                item.setId(group.getFid());
-                                items.add(item);
-
-                                for (int j = i + 1; j < list.size(); j++) {
-
-                                    if (list.get(j) == null) {
-                                        continue;
-                                    }
-
-                                    if (group.getGroupName().equals(list.get(j).getGroupName())) {
-                                        item = new Item();
-                                        item.setId(list.get(j).getFid());
-                                        items.add(item);
-                                        list.set(j, null);
-                                    }
-                                }
-                                mData.add(items);
-                            }
-
-                            Activity a = getActivity();
-                            if (a == null) {
-                                return;
-                            }
-                            a.runOnUiThread(new Runnable() {
-                                @Override
-                                public void run() {
-                                    mAdapter = new ExpandAdapter(getActivity(), mGroupData, mData);
-                                    mListView.setAdapter(mAdapter);
-                                    SharedPreferences.Editor editor = mPreferences.edit();
-                                    LogUtils.e(TAG, mGroupData.size() + "");
-                                    editor.putString(Constant.GROUP_NAME_LIST, mGroupData.toString());
-                                    editor.commit();
-                                }
-                            });
-
-                        } else if (result.getCode() == Constant.FAIL) {
-                            str = "更新失败";
-                        } else if (result.getCode() == Constant.EXECUTING) {
-                            str = "服务器繁忙";
-                        } else {
-                            str = "未知异常";
-                        }
-
-                        if (isDebug) {
-                            LogUtils.i(TAG, str);
-                        }
-                    }
-
-                    @Override
-                    public void onNext(Result result) {
-                        this.result = result;
-                        if (isDebug) {
-                            LogUtils.i(TAG, result.toString());
-                        }
-                    }
-
-                    @Override
-                    public void onError(Throwable e) {
-                        if (isDebug) {
-                            LogUtils.i(TAG, e.toString());
-                        }
-                        e.printStackTrace();
-                    }
-                });
     }
 
     public void saveMsg(User user) {
@@ -224,60 +180,24 @@ public class SubContactFragment extends BaseFragment implements
     }
 
     private void getUserInfoSvc(final int chatId, final String content) {
-        ApiClient.service.getUserInfoByChatId(chatId)
-                .subscribeOn(Schedulers.newThread())
-                //.observeOn(AndroidSchedulers.mainThread())
-                .observeOn(Schedulers.newThread())
-                .subscribe(new Subscriber<Result>() {
-                    Result result = null;
 
-                    @Override
-                    public void onCompleted() {
-                        String str;
-                        if (result == null) {
-                            str = "未知异常";
-                        } else if (result.getCode() == Constant.SUCCESS) {
-                            str = "获取用户信息";
-                            User user = ApiClient.gson.fromJson(result.getModel().toString(), User.class);
-                            saveMsg(user);
-                            ChatLog entity = new ChatLog();
-                            entity.setLogno(user.getChatId() + "-" + mUser.getChatId());
-                            entity.setName(user.getName() + "(" + user.getId() + ")");
-                            entity.setContent(content);
-                            entity.setType(2);
-                            entity.setDate(new Date(System.currentTimeMillis()));
-                            entity.setUrl(user.getUrl());
-                            ChatLogHelper.insert(entity);
-                            List<ChatLog> list = ChatLogHelper.queryAll();
-                            LogUtils.d(TAG, "数据记录长度增到[" + list.size() + "]");
-                        } else if (result.getCode() == Constant.FAIL) {
-                            str = "获取失败";
-                        } else if (result.getCode() == Constant.EXECUTING) {
-                            str = "服务器繁忙";
-                        } else {
-                            str = "未知异常";
-                        }
-                        if (isDebug) {
-                            LogUtils.i(TAG, str);
-                        }
-                    }
-
-                    @Override
-                    public void onNext(Result result) {
-                        this.result = result;
-                        if (isDebug) {
-                            LogUtils.i(TAG, result.toString());
-                        }
-                    }
-
-                    @Override
-                    public void onError(Throwable e) {
-                        if (isDebug) {
-                            LogUtils.i(TAG, e.toString());
-                        }
-                        e.printStackTrace();
-                    }
-                });
+        ApiClientImpl.getUserInfoSvc(new RetrofitCallbackListener() {
+            @Override
+            public void receive(Result result) {
+                User user = ApiClient.gson.fromJson(result.getModel().toString(), User.class);
+                saveMsg(user);
+                ChatLog entity = new ChatLog();
+                entity.setLogno(user.getChatId() + "-" + mUser.getChatId());
+                entity.setName(user.getName() + "(" + user.getId() + ")");
+                entity.setContent(content);
+                entity.setType(2);
+                entity.setDate(new Date(System.currentTimeMillis()));
+                entity.setUrl(user.getUrl());
+                ChatLogHelper.insert(entity);
+                List<ChatLog> list = ChatLogHelper.queryAll();
+                LogUtils.d(TAG, "数据记录长度增到[" + list.size() + "]");
+            }
+        }, chatId);
     }
 
 

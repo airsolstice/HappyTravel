@@ -22,7 +22,7 @@
             android:layout_width="1dp"
             android:layout_height="match_parent"
             android:layout_weight="1"
-            android:padding="10dp"
+            android:padding="12dp"
             android:src="@mipmap/ic_left_32"
             android:gravity="center_vertical|right"/>
         <TextView
@@ -31,7 +31,8 @@
             android:layout_height="match_parent"
             android:layout_weight="1"
             android:gravity="center"
-            android:text="好友"
+            android:hint="暂无分组"
+            android:textColorHint="@color/white"
             android:textColor="@color/green"
             android:textSize="17sp"
             android:textStyle="bold" />
@@ -42,7 +43,7 @@
             android:layout_height="match_parent"
             android:layout_weight="1"
             android:gravity="center_vertical|left"
-            android:padding="10dp"
+            android:padding="12dp"
             android:src="@mipmap/ic_right_32"/>
 
         <TextView

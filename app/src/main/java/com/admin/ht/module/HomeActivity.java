@@ -1,5 +1,6 @@
 package com.admin.ht.module;
 
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Build;
@@ -9,6 +10,7 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentStatePagerAdapter;
 import android.support.v4.view.ViewPager;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.PopupMenu;
 import android.util.Log;
 import android.view.KeyEvent;
@@ -87,7 +89,7 @@ public class HomeActivity extends BaseActivity {
         requestWindowFeature(Window.FEATURE_NO_TITLE);
         super.onCreate(savedInstanceState);
 
-        User user = (User) getIntent().getExtras().get(BaseActivity.USER);
+        User user = (User) getIntent().getExtras().get(Constant.USER);
         if(user != null){
             if (isDebug){
                 LogUtils.e(TAG, user.toString());
@@ -120,50 +122,60 @@ public class HomeActivity extends BaseActivity {
 
     @OnClick(R.id.search)
     public void doLogout() {
+        new AlertDialog.Builder(mContext)
+                .setMessage("确认注销？")
+                .setCancelable(false)
+                .setPositiveButton("确定", new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id) {
+                        //在连不上IM服务器时的异常处理
+                        if(!ClientCoreSDK.getInstance().isLocalDeviceNetworkOk()){
+                            ToastUtils.showShort(mContext, "网络异常，请重新启动应用");
+                            startActivity(new Intent(mContext, LoginActivity.class));
+                            finish();
+                            return;
+                        }
 
-        //在连不上IM服务器时的异常处理
-        if(!ClientCoreSDK.getInstance().isLocalDeviceNetworkOk()){
-            ToastUtils.showShort(mContext, "网络异常，请重新启动应用");
-            startActivity(new Intent(mContext, LoginActivity.class));
-            finish();
-            return;
-        }
+                        if(!ClientCoreSDK.getInstance().isLoginHasInit()){
+                            ToastUtils.showShort(mContext, "登录异常，请重新启动应用");
+                            startActivity(new Intent(mContext, LoginActivity.class));
+                            finish();
+                            return;
+                        }
 
-        if(!ClientCoreSDK.getInstance().isLoginHasInit()){
-            ToastUtils.showShort(mContext, "登录异常，请重新启动应用");
-            startActivity(new Intent(mContext, LoginActivity.class));
-            finish();
-            return;
-        }
+                        if(!ClientCoreSDK.getInstance().isConnectedToServer()){
+                            ToastUtils.showShort(mContext, "IM服务器异常，请重新启动应用");
+                            startActivity(new Intent(mContext, LoginActivity.class));
+                            finish();
+                            return;
+                        }
 
-        if(!ClientCoreSDK.getInstance().isConnectedToServer()){
-            ToastUtils.showShort(mContext, "IM服务器异常，请重新启动应用");
-            startActivity(new Intent(mContext, LoginActivity.class));
-            finish();
-            return;
-        }
+                        new AsyncTask<Object, Integer, Integer>(){
+                            @Override
+                            protected Integer doInBackground(Object... params) {
+                                int code = -1;
+                                try{
+                                    code = LocalUDPDataSender.getInstance(mContext).sendLoginout();
+                                }
+                                catch (Exception e){
+                                    Log.w(TAG, e);
+                                }
 
-        new AsyncTask<Object, Integer, Integer>(){
-            @Override
-            protected Integer doInBackground(Object... params) {
-                int code = -1;
-                try{
-                    code = LocalUDPDataSender.getInstance(mContext).sendLoginout();
-                }
-                catch (Exception e){
-                    Log.w(TAG, e);
-                }
+                                return code;
+                            }
 
-                return code;
-            }
-
-            @Override
-            protected void onPostExecute(Integer code) {
-                startActivity(new Intent(mContext, LoginActivity.class));
-                finish();
-            }
-        }.execute();
-
+                            @Override
+                            protected void onPostExecute(Integer code) {
+                                startActivity(new Intent(mContext, LoginActivity.class));
+                                finish();
+                            }
+                        }.execute();
+                    }
+                })
+                .setNegativeButton("取消", new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id) {
+                        dialog.cancel();
+                    }
+                }).create().show();
     }
 
 

@@ -3,6 +3,7 @@ package com.admin.ht.module;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.os.Build;
 import android.os.Bundle;
@@ -19,6 +20,7 @@ import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
+
 import com.admin.ht.IM.IMClientManager;
 import com.admin.ht.R;
 import com.admin.ht.base.BaseActivity;
@@ -26,21 +28,23 @@ import com.admin.ht.base.Constant;
 import com.admin.ht.model.Result;
 import com.admin.ht.model.User;
 import com.admin.ht.retro.ApiClient;
+import com.admin.ht.retro.ApiClientImpl;
+import com.admin.ht.retro.RetrofitCallbackListener;
 import com.admin.ht.utils.KeyBoardUtils;
 import com.admin.ht.utils.LogUtils;
 import com.admin.ht.utils.NetUtils;
 import com.admin.ht.utils.StringUtils;
 import com.admin.ht.utils.ToastUtils;
+
 import net.openmob.mobileimsdk.android.ClientCoreSDK;
 import net.openmob.mobileimsdk.android.core.LocalUDPDataSender;
 import net.openmob.mobileimsdk.android.event.ChatBaseEvent;
+
 import java.util.Observable;
 import java.util.Observer;
+
 import butterknife.Bind;
 import butterknife.OnClick;
-import rx.Subscriber;
-import rx.android.schedulers.AndroidSchedulers;
-import rx.schedulers.Schedulers;
 
 /**
  * 登入Activity
@@ -69,9 +73,10 @@ public class LoginActivity extends BaseActivity implements ChatBaseEvent{
         requestWindowFeature(Window.FEATURE_NO_TITLE);
         super.onCreate(savedInstanceState);
 
-        mPhoneStr = mPreferences.getString(COUNT, "");
-        mPwdStr = mPreferences.getString(PWD, "");
-        isSaved = mPreferences.getBoolean(IS_SAVED, false);
+        mPhoneStr = mPreferences.getString(Constant.COUNT, "");
+        mPwdStr = mPreferences.getString(Constant.PWD, "");
+        isSaved = mPreferences.getBoolean(Constant.IS_SAVED, false);
+
         if(isSaved){
             mPhone.setText(mPhoneStr);
             mPhone.setSelection(mPhoneStr.length());
@@ -98,71 +103,41 @@ public class LoginActivity extends BaseActivity implements ChatBaseEvent{
         mPhoneStr = mPhone.getText().toString();
         mPwdStr = mPwd.getText().toString();
 
+        mPhone.setHintTextColor(Color.parseColor("#7a7a7a"));
+        mPwd.setHintTextColor(Color.parseColor("#7a7a7a"));
+
         //输入合法性判断
-        Drawable dw = ContextCompat.getDrawable(mContext.getApplicationContext(), R.mipmap.ic_empty);
         if (TextUtils.isEmpty(mPhoneStr) || !StringUtils.isPhone(mPhoneStr)) {
             mPhone.setText("");
-            mPhone.setCompoundDrawables(null, null, dw, null);
+            mPhone.setHintTextColor(Color.parseColor("#FF4081"));
+            ToastUtils.showShort(mContext, "帐号不正确");
             return;
         } else if (TextUtils.isEmpty(mPwdStr) || mPwdStr.length() < 6 || mPwdStr.length() > 18) {
             mPwd.setText("");
-            mPwd.setCompoundDrawables(null, null, dw, null);
+            mPwd.setHintTextColor(Color.parseColor("#FF4081"));
+            ToastUtils.showShort(mContext, "密码不正确");
             return;
         }
 
         if (mIsSaved.isChecked()) {
-            editor.putString(COUNT, mPhoneStr);
-            editor.putString(PWD, mPwdStr);
+            editor.putString(Constant.COUNT, mPhoneStr);
+            editor.putString(Constant.PWD, mPwdStr);
         }
-        editor.putBoolean(IS_SAVED, mIsSaved.isChecked());
+
+        editor.putBoolean(Constant.IS_SAVED, mIsSaved.isChecked());
         editor.commit();
 
-        loginInSvc();
-    }
-
-    public void loginInSvc() {
-        ApiClient.service.loginIn(mPhoneStr, StringUtils.MD5(mPwdStr))
-                .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(new Subscriber<Result>() {
-                    Result result = null;
-                    @Override
-                    public void onCompleted() {
-                        String str ;
-                        if(result == null){
-                            str = "未知异常";
-                        } else if (result.getCode() == Constant.SUCCESS) {
-                            str = "用户验证成功，正在的登录IM服务器";
-                            User user = ApiClient.gson.fromJson(result.getModel().toString(), User.class);
-                            loginIM(user.getId());
-                            Intent intent = new Intent(LoginActivity.this, HomeActivity.class);
-                            intent.putExtra(BaseActivity.USER, user);
-                            startActivity(intent);
-                            finish();
-                        } else if (result.getCode() == Constant.FAIL) {
-                            str = "登入失败";
-                        } else if(result.getCode() == Constant.EXECUTING){
-                            str = "服务器繁忙";
-                        } else {
-                            str = "未知异常";
-                        }
-                        ToastUtils.showShort(mContext, str);
-                    }
-
-                    @Override
-                    public void onNext(Result result) {
-                        if(isDebug){
-                            LogUtils.i(TAG, result.toString());
-                        }
-                        this.result = result;
-                    }
-
-                    @Override
-                    public void onError(Throwable e) {
-                        e.printStackTrace();
-                        ToastUtils.showShort(mContext, "未知异常");
-                    }
-                });
+        ApiClientImpl.loginInSvc(new RetrofitCallbackListener() {
+            @Override
+            public void receive(Result result) {
+                User user = ApiClient.gson.fromJson(result.getModel().toString(), User.class);
+                loginIM(user.getId());
+                Intent intent = new Intent(LoginActivity.this, HomeActivity.class);
+                intent.putExtra(Constant.USER, user);
+                startActivity(intent);
+                finish();
+            }
+        }, mPhoneStr, StringUtils.MD5(mPwdStr));
 
     }
 
@@ -264,6 +239,21 @@ public class LoginActivity extends BaseActivity implements ChatBaseEvent{
     }
 
     @Override
+    public void onLoginMessage(int dwUserId, int dwErrorCode) {
+        if (dwErrorCode == 0) {
+            Log.i(TAG, "登录成功，当前分配的user_id = " + dwUserId);
+            LogUtils.i(TAG, "登录成功," + dwUserId);
+        } else {
+            Log.e(TAG, "登录失败，错误代码：" + dwErrorCode);
+        }
+    }
+
+    @Override
+    public void onLinkCloseMessage(int dwErrorCode) {
+        Log.e(TAG, "网络连接出错关闭了，error：" + dwErrorCode);
+    }
+
+    @Override
     protected String getTAG() {
         return "Login";
     }
@@ -281,20 +271,5 @@ public class LoginActivity extends BaseActivity implements ChatBaseEvent{
     @Override
     public int setLayoutId() {
         return R.layout.activity_login;
-    }
-
-    @Override
-    public void onLoginMessage(int dwUserId, int dwErrorCode) {
-        if (dwErrorCode == 0) {
-            Log.i(TAG, "登录成功，当前分配的user_id = " + dwUserId);
-            LogUtils.i(TAG, "登录成功," + dwUserId);
-        } else {
-            Log.e(TAG, "登录失败，错误代码：" + dwErrorCode);
-        }
-    }
-
-    @Override
-    public void onLinkCloseMessage(int dwErrorCode) {
-        Log.e(TAG, "网络连接出错关闭了，error：" + dwErrorCode);
     }
 }

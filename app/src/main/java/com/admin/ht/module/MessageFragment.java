@@ -24,6 +24,8 @@ import com.admin.ht.model.RecentMsg;
 import com.admin.ht.model.Result;
 import com.admin.ht.model.User;
 import com.admin.ht.retro.ApiClient;
+import com.admin.ht.retro.ApiClientImpl;
+import com.admin.ht.retro.RetrofitCallbackListener;
 import com.admin.ht.utils.LogUtils;
 
 import net.openmob.mobileimsdk.android.ClientCoreSDK;
@@ -98,7 +100,7 @@ public class MessageFragment extends BaseFragment implements AdapterView.OnItemC
         item.setName(msg.getName());
         item.setNote(msg.getNote());
         Intent intent = new Intent(getActivity(), SingleChatActivity.class);
-        intent.putExtra(BaseActivity.TARGET_USER, item);
+        intent.putExtra(Constant.TARGET_USER, item);
         getActivity().startActivity(intent);
     }
 
@@ -137,60 +139,24 @@ public class MessageFragment extends BaseFragment implements AdapterView.OnItemC
     }
 
     private void getUserInfoSvc(final int chatId, final String content) {
-        ApiClient.service.getUserInfoByChatId(chatId)
-                .subscribeOn(Schedulers.newThread())
-                //.observeOn(AndroidSchedulers.mainThread())
-                .observeOn(Schedulers.newThread())
-                .subscribe(new Subscriber<Result>() {
-                    Result result = null;
+        ApiClientImpl.getUserInfoSvc(new RetrofitCallbackListener() {
+            @Override
+            public void receive(Result result) {
+                User user = ApiClient.gson.fromJson(result.getModel().toString(), User.class);
+                saveMsg(user);
+                ChatLog entity = new ChatLog();
+                entity.setLogno(user.getChatId() + "-" + mUser.getChatId());
+                entity.setName(user.getName() + "(" + user.getId() + ")");
+                entity.setContent(content);
+                entity.setType(2);
+                entity.setDate(new Date(System.currentTimeMillis()));
+                entity.setUrl(user.getUrl());
+                ChatLogHelper.insert(entity);
+                List<ChatLog> list = ChatLogHelper.queryAll();
+                LogUtils.d(TAG, "数据记录长度增到[" + list.size() + "]");
+            }
+        }, chatId);
 
-                    @Override
-                    public void onCompleted() {
-                        String str;
-                        if (result == null) {
-                            str = "未知异常";
-                        } else if (result.getCode() == Constant.SUCCESS) {
-                            str = "获取用户信息";
-                            User user = ApiClient.gson.fromJson(result.getModel().toString(), User.class);
-                            saveMsg(user);
-                            ChatLog entity = new ChatLog();
-                            entity.setLogno(user.getChatId() + "-" + mUser.getChatId());
-                            entity.setName(user.getName() + "(" + user.getId() + ")");
-                            entity.setContent(content);
-                            entity.setType(2);
-                            entity.setDate(new Date(System.currentTimeMillis()));
-                            entity.setUrl(user.getUrl());
-                            ChatLogHelper.insert(entity);
-                            List<ChatLog> list = ChatLogHelper.queryAll();
-                            LogUtils.d(TAG, "数据记录长度增到[" + list.size() + "]");
-                        } else if (result.getCode() == Constant.FAIL) {
-                            str = "获取失败";
-                        } else if (result.getCode() == Constant.EXECUTING) {
-                            str = "服务器繁忙";
-                        } else {
-                            str = "未知异常";
-                        }
-                        if (isDebug) {
-                            LogUtils.i(TAG, str);
-                        }
-                    }
-
-                    @Override
-                    public void onNext(Result result) {
-                        this.result = result;
-                        if (isDebug) {
-                            LogUtils.i(TAG, result.toString());
-                        }
-                    }
-
-                    @Override
-                    public void onError(Throwable e) {
-                        if (isDebug) {
-                            LogUtils.i(TAG, e.toString());
-                        }
-                        e.printStackTrace();
-                    }
-                });
     }
 
     @Override

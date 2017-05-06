@@ -1,5 +1,6 @@
 package com.admin.ht.module;
 
+import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.os.Build;
 import android.os.Bundle;
@@ -15,6 +16,8 @@ import com.admin.ht.base.BaseActivity;
 import com.admin.ht.base.Constant;
 import com.admin.ht.model.Result;
 import com.admin.ht.retro.ApiClient;
+import com.admin.ht.retro.ApiClientImpl;
+import com.admin.ht.retro.RetrofitCallbackListener;
 import com.admin.ht.utils.LogUtils;
 import com.admin.ht.utils.StringUtils;
 import com.admin.ht.utils.ToastUtils;
@@ -84,7 +87,6 @@ public class ForgotPwdActivity extends BaseActivity {
     protected void onCreate(Bundle savedInstanceState) {
         requestWindowFeature(Window.FEATURE_NO_TITLE);
         super.onCreate(savedInstanceState);
-
         SMSSDK.registerEventHandler(mHandler);
     }
 
@@ -107,26 +109,35 @@ public class ForgotPwdActivity extends BaseActivity {
         mPwdStr = mPwd.getText().toString().trim();
         mVerifyStr = mVerify.getText().toString().trim();
         mCodeStr = mIdentifyingCode.getText().toString().trim();
+
+        mPhone.setHintTextColor(Color.parseColor("#7a7a7a"));
+        mPwd.setHintTextColor(Color.parseColor("#7a7a7a"));
+        mVerify.setHintTextColor(Color.parseColor("#7a7a7a"));
+        mIdentifyingCode.setHintTextColor(Color.parseColor("#7a7a7a"));
+
         String errStr = "";
 
         //输入合法性判断
-        Drawable dw = ContextCompat.getDrawable(mContext.getApplicationContext(), R.mipmap.ic_empty);
         if (!StringUtils.isPhone(mPhoneStr)) {
-            mPhone.setCompoundDrawables(null, null, dw, null);
             errStr = "手机号码格式有误";
+            mPhone.setText("");
+            mPhone.setHintTextColor(Color.parseColor("#FF4081"));
             return;
         } else if (TextUtils.isEmpty(mPwdStr) || mPwdStr.length() < 6 || mPwdStr.length() > 18) {
             //对于密码长度和格式的校验，可以参考ValidateUtils，由于测试方便，并未加上验证
-            mPwd.setCompoundDrawables(null, null, dw, null);
             errStr = "密码格式不正确";
+            mPwd.setText("");
+            mPwd.setHintTextColor(Color.parseColor("#FF4081"));
         } else if (!mVerifyStr.equals(mPwdStr)) {
-            mVerify.setCompoundDrawables(null, null, dw, null);
             errStr = "两次密码输入不一致";
+            mVerify.setText("");
+            mPwd.setText("");
+            mVerify.setHintTextColor(Color.parseColor("#FF4081"));
         } else if (mCodeStr.length() != 4) {
-            mIdentifyingCode.setCompoundDrawables(null, null, dw, null);
-            ToastUtils.showShort(mContext, "验证码输入有误");
+            errStr = "验证码输入有误";
+            mIdentifyingCode.setText("");
+            mIdentifyingCode.setHintTextColor(Color.parseColor("#FF4081"));
         }
-
 
         if (!TextUtils.isEmpty(errStr)) {
             ToastUtils.showShort(mContext, errStr);
@@ -151,42 +162,13 @@ public class ForgotPwdActivity extends BaseActivity {
     };
 
     public void retrieveSvc(String id, String pwd) {
-        ApiClient.service.retrievePwd(id, StringUtils.MD5(pwd))
-                .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(new Subscriber<Result>() {
-                    Result result = null;
-                    @Override
-                    public void onCompleted() {
-                        String str ;
-                        if(result == null){
-                            str = "未知异常";
-                        } else if (result.getCode() == Constant.SUCCESS) {
-                            str = "密码修改成功，请重新登入";
-                            handler.sendEmptyMessageDelayed(Constant.DELAY_TASK, 1000);
-                        } else if (result.getCode() == Constant.FAIL) {
-                            str = "密码修改失败";
-                        } else if(result.getCode() == Constant.EXECUTING){
-                            str = "服务器繁忙";
-                        } else {
-                            str = "未知异常";
-                        }
-                        ToastUtils.showShort(mContext, str);
-                    }
-
-                    @Override
-                    public void onNext(Result result) {
-                        LogUtils.i(TAG, result.toString());
-                        this.result = result;
-                    }
-
-                    @Override
-                    public void onError(Throwable e) {
-                        e.printStackTrace();
-                        ToastUtils.showShort(mContext, "未知异常");
-                    }
-                });
-
+        ApiClientImpl.retrieveSvc(new RetrofitCallbackListener() {
+            @Override
+            public void receive(Result result) {
+                handler.sendEmptyMessageDelayed(Constant.DELAY_TASK, 1000);
+                ToastUtils.showShort(mContext, "密码修改成功，请重新登入");
+            }
+        }, id, StringUtils.MD5(pwd));
     }
 
     @Override

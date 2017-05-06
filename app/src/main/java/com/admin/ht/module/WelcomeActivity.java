@@ -10,79 +10,60 @@ import android.widget.Toast;
 
 import com.admin.ht.R;
 import com.admin.ht.base.BaseActivity;
+import com.admin.ht.base.Constant;
 import com.facebook.drawee.view.SimpleDraweeView;
 
 import butterknife.Bind;
 
 /**
- * 欢迎Activity
+ * 欢迎Activity,程序入口
  *
  * Created by Solstice on 3/12/2017.
  */
-public class WelcomeActivity extends BaseActivity {
+public class WelcomeActivity extends BaseActivity implements Animation.AnimationListener{
 
     @Bind(R.id.simple_img)
     SimpleDraweeView mSimpleView;
-    private long mExitTime;
+    private long mTime;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         setFullScreen();
-
         super.onCreate(savedInstanceState);
-        initAnimation();
-
+        AlphaAnimation animation = new AlphaAnimation(0.0f, 1.0f);
+        animation.setDuration(6000);
+        mSimpleView.startAnimation(animation);
+        animation.setAnimationListener(this);
     }
 
-    private void initAnimation() {
-        /* 设置透明度动画*/
-        AlphaAnimation anima = new AlphaAnimation(0.0f, 1.0f);
-        /* 设置动画时间*/
-        anima.setDuration(6000);
-        /* 开启动画*/
-        mSimpleView.startAnimation(anima);
-        /*动画完成时的接口监听事件*/
-        anima.setAnimationListener(new LogoAnimation());
-
+    @Override
+    public void onAnimationStart(Animation animation) {
+        mSimpleView.setImageURI(Uri.parse(Constant.URL_WELCOME_PICTURE));
     }
 
-    private class LogoAnimation implements Animation.AnimationListener {
-
-        @Override
-        public void onAnimationStart(Animation animation) {
-            mSimpleView.setImageURI(Uri.parse("http://pic.90sjimg" +
-                    ".com/back_pic/u/00/02/82/06/561f2511e7227.jpg"));
-        }
-
-        @Override
-        public void onAnimationEnd(Animation animation) {
-
-            skip2LoginActivity();
-        }
-
-        @Override
-        public void onAnimationRepeat(Animation animation) {
-
-        }
-
-    }
-
-    private void skip2LoginActivity() {
+    @Override
+    public void onAnimationEnd(Animation animation) {
         startActivity(new Intent(this, LoginActivity.class));
         finish();
     }
 
+    @Override
+    public void onAnimationRepeat(Animation animation) {
+
+    }
 
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent event) {
         if (keyCode == KeyEvent.KEYCODE_BACK) {
-            if ((System.currentTimeMillis() - mExitTime) > 2000) {//
+            if ((System.currentTimeMillis() - mTime) > 2000) {//
                 // 如果两次按键时间间隔大于2000毫秒，则不退出
                 Toast.makeText(this, "再按一次退出程序", Toast.LENGTH_SHORT).show();
-                mExitTime = System.currentTimeMillis();// 更新mExitTime
+                // 更新mExitTime
+                mTime = System.currentTimeMillis();
             } else {
                 mApplication.exit();
-                System.exit(0);// 否则退出程序
+                // 否则退出程序
+                System.exit(0);
             }
             return true;
         }

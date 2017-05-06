@@ -81,7 +81,7 @@ public class ApiClient {
          */
         @FormUrlEncoded
         @POST("group/list")
-        Observable<Result> getGroupList(@Field("id") String id);
+        Observable<Result> getGroups(@Field("id") String id);
 
         /**
          * 通过id获取用户信息
@@ -110,7 +110,7 @@ public class ApiClient {
          */
         @FormUrlEncoded
         @POST("user/info/bychatid/get")
-        Observable<Result> getUserInfoByChatId(@Field("chatId") int chatId);
+        Observable<Result> getUserInfo(@Field("chatId") int chatId);
 
         /**
          * 通过id获取chat id
@@ -120,7 +120,7 @@ public class ApiClient {
          */
         @FormUrlEncoded
         @POST("chat/group/list")
-        Observable<Result> getGroups(@Field("memberId") String memberId);
+        Observable<Result> getChatGroups(@Field("memberId") String memberId);
 
         /**
          * 通过id获取chat id
@@ -150,7 +150,7 @@ public class ApiClient {
          */
         @FormUrlEncoded
         @POST("group/delete")
-        Observable<Result> deleteShip(@Field("id") String id, @Field("fid") String fid);
+        Observable<Result> removeShip(@Field("id") String id, @Field("fid") String fid);
 
         /**
          * 搜索群
@@ -189,9 +189,9 @@ public class ApiClient {
          * @return
          */
         @FormUrlEncoded
-        @POST("chat/group/create")
-        Observable<Result> create(@Field("memberId") String memberId, @Field("groupName") String groupName,
-                                  @Field("role") int role);
+        @POST("chat/group/createGroup")
+        Observable<Result> createGroup(@Field("memberId") String memberId, @Field("groupName") String groupName,
+                                       @Field("role") int role);
 
         /**
          * 退群
@@ -200,7 +200,7 @@ public class ApiClient {
          */
         @FormUrlEncoded
         @POST("chat/group/quit")
-        Observable<Result> quitGroup(@Field("groupId") int groupId, @Field("memberId") String memberId);
+        Observable<Result> quitChatGroup(@Field("groupId") int groupId, @Field("memberId") String memberId);
 
         /**
          * 获取群组成员
@@ -260,7 +260,7 @@ public class ApiClient {
             //这里最后面必须能带“/”
             .baseUrl("http://192.168.2.227:8080/frame-study-demo/")
             //设置json默认解析器
-            //.addConverterFactory(GsonConverterFactory.create(gson)
+            //.addConverterFactory(GsonConverterFactory.createGroup(gson)
             //设置json自定义解析器
             .addConverterFactory(MyGsonConverter.create(gson))
             //设置RxJava响应式回调

@@ -22,6 +22,8 @@ import com.admin.ht.base.Constant;
 import com.admin.ht.model.Result;
 import com.admin.ht.model.User;
 import com.admin.ht.retro.ApiClient;
+import com.admin.ht.retro.ApiClientImpl;
+import com.admin.ht.retro.RetrofitCallbackListener;
 import com.admin.ht.utils.KeyBoardUtils;
 import com.admin.ht.utils.LogUtils;
 import com.admin.ht.utils.ToastUtils;
@@ -110,75 +112,48 @@ public class PersonalAdditionActivity extends BaseActivity {
             return;
         }
 
-        ApiClient.service.searchUser(key)
-                .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(new Subscriber<Result>() {
-                    Result result = null;
-                    ResultListAdapter adapter = null;
-                    @Override
-                    public void onCompleted() {
-                        String str;
-                        if (result == null) {
-                            str = "未知异常";
-                        } else if (result.getCode() == Constant.SUCCESS) {
-                            str = "搜索结果";
-                            mData.clear();
-                            //解析User的json数组
-                            Type type = new TypeToken<ArrayList<User>>() {}.getType();
-                            List<User> list = ApiClient.gson.fromJson(result.getModel().toString(), type);
-                            //获取当前用户信息
-                            if (mHolderUser == null) {
-                                mHolderUser = getUser();
-                            }
-                            //列表中删除当前自己的信息
-                            for(int i = 0; i < list.size(); i++){
-                                if(list.get(i).getId().equals(mHolderUser.getId())){
-                                    list.remove(i);
-                                }
-                            }
-                            mData.addAll(list);
-                            //将数据装入适配器
-                            String[] groups = mGroups.toArray(new String[mGroups.size()]);
-                            adapter = new ResultListAdapter(mContext, mData, mHolderUser.getId(), groups);
-                            mResultList.setAdapter(adapter);
+        ApiClientImpl.searchUserSvc(new RetrofitCallbackListener() {
+            ResultListAdapter adapter = null;
+            @Override
+            public void receive(Result result) {
 
-                            if (mHolderUser == null) {
-                                mHolderUser = getUser();
-                            }
-                            //提示结果信息
-                            mTip.setText(String.format("搜索到%s个结果", mData.size()));
-                        } else if (result.getCode() == Constant.FAIL) {
-                            str = "搜索失败";
-                            //搜索失败，清空结果列表，通知刷新
-                            mTip.setText("搜索不到结果，请输入有效手机号");
-                            if(adapter != null){
-                                mData.clear();
-                                adapter.notifyDataSetChanged();
-                            }
-                        } else if (result.getCode() == Constant.EXECUTING) {
-                            str = "服务器繁忙";
-                        } else {
-                            str = "未知异常";
+                if(result.getCode() == 200){
+                    mData.clear();
+                    //解析User的json数组
+                    Type type = new TypeToken<ArrayList<User>>() {}.getType();
+                    List<User> list = ApiClient.gson.fromJson(result.getModel().toString(), type);
+                    //获取当前用户信息
+                    if (mHolderUser == null) {
+                        mHolderUser = getUser();
+                    }
+                    //列表中删除当前自己的信息
+                    for(int i = 0; i < list.size(); i++){
+                        if(list.get(i).getId().equals(mHolderUser.getId())){
+                            list.remove(i);
                         }
-                        LogUtils.v(TAG, str);
                     }
+                    mData.addAll(list);
+                    //将数据装入适配器
+                    String[] groups = mGroups.toArray(new String[mGroups.size()]);
+                    adapter = new ResultListAdapter(mContext, mData, mHolderUser.getId(), groups);
+                    mResultList.setAdapter(adapter);
 
-                    @Override
-                    public void onNext(Result result) {
-                        if (isDebug) {
-                            LogUtils.i(TAG, result.toString());
-                        }
-                        this.result = result;
+                    if (mHolderUser == null) {
+                        mHolderUser = getUser();
                     }
-
-                    @Override
-                    public void onError(Throwable e) {
-                        e.printStackTrace();
-                        ToastUtils.showShort(mContext, "未知异常");
+                    //提示结果信息
+                    mTip.setText(String.format("搜索到%s个结果", mData.size()));
+                } else {
+                    //搜索失败，清空结果列表，通知刷新
+                    mTip.setText("搜索不到结果，请输入有效手机号");
+                    if(adapter != null){
+                        mData.clear();
+                        adapter.notifyDataSetChanged();
                     }
-                });
+                }
 
+            }
+        }, key);
     }
 
     public void add(String id, String groupName) {

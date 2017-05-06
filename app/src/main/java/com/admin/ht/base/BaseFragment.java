@@ -1,6 +1,5 @@
 package com.admin.ht.base;
 
-import android.app.Activity;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.Bundle;
@@ -20,45 +19,30 @@ import com.admin.ht.utils.LogUtils;
 public abstract class BaseFragment extends Fragment {
 
     protected String TAG = getTAG();
-    /**
-     * 设置控制台目标对象
-     */
     protected abstract String getTAG();
     public abstract boolean setDebug();
     protected boolean isDebug = setDebug();
     protected SharedPreferences mPreferences = null;
     protected User mUser = null;
-
     private Context mContext = null;
 
-    /**
-     *
-     * @param id
-     * @param name
-     * @param email
-     * @param url
-     * @return
-     */
+
     public boolean putUser(String id, String name, String email, String url, int chatId){
         SharedPreferences.Editor editor = mPreferences.edit();
-        editor.putString(BaseActivity.USER_ID, id);
-        editor.putString(BaseActivity.USER_HEAD_URL, url);
-        editor.putString(BaseActivity.USER_EMAIL, email);
-        editor.putString(BaseActivity.USER_NAME, name);
-        editor.putInt(BaseActivity.USER_CHAT_ID, chatId);
+        editor.putString(Constant.USER_ID, id);
+        editor.putString(Constant.USER_HEAD_URL, url);
+        editor.putString(Constant.USER_EMAIL, email);
+        editor.putString(Constant.USER_NAME, name);
+        editor.putInt(Constant.USER_CHAT_ID, chatId);
         return editor.commit();
     }
 
-    /**
-     *
-     * @return
-     */
     public User getUser(){
-        String id = mPreferences.getString(BaseActivity.USER_ID,"");
-        String name = mPreferences.getString(BaseActivity.USER_NAME,"");
-        String url = mPreferences.getString(BaseActivity.USER_HEAD_URL,BaseActivity.USER_DEFAULT_HEAD_URL);
-        String email = mPreferences.getString(BaseActivity.USER_EMAIL, "");
-        int chatId = mPreferences.getInt(BaseActivity.USER_CHAT_ID, 0);
+        String id = mPreferences.getString(Constant.USER_ID,"");
+        String name = mPreferences.getString(Constant.USER_NAME,"");
+        String url = mPreferences.getString(Constant.USER_HEAD_URL,Constant.USER_DEFAULT_HEAD_URL);
+        String email = mPreferences.getString(Constant.USER_EMAIL, "");
+        int chatId = mPreferences.getInt(Constant.USER_CHAT_ID, 0);
         User user = new User(id,name, email, url, chatId);
         return user;
     }
@@ -82,14 +66,13 @@ public abstract class BaseFragment extends Fragment {
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         if (isDebug) LogUtils.v(TAG, "onCreate");
-        mPreferences = getActivity().getSharedPreferences(BaseActivity.FILE_NAME, 0);
+        mPreferences = getActivity().getSharedPreferences(Constant.FILE_NAME, 0);
     }
 
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         if (isDebug) LogUtils.v(TAG, "onCreateView");
-
         return super.onCreateView(inflater, container, savedInstanceState);
     }
 

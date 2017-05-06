@@ -21,43 +21,14 @@ import butterknife.ButterKnife;
  */
 public abstract class BaseActivity extends AppCompatActivity {
 
-    public static String FILE_NAME = "user_login_info_file";
-    public static String COUNT = "user_count";
-    public static String PWD = "user_pwd";
-    public static String IS_SAVED = "is_saved_flag";
-    public static String TARGET_USER = "target_user";
-    public static String USER = "user";
-    public static String USER_ID = "user_id";
-    public static String USER_HEAD_URL = "user_url";
-    public static String USER_EMAIL = "user_email";
-    public static String USER_NAME = "user_name";
-    public static String USER_CHAT_ID = "user_chat_id";
-    public static String USER_DEFAULT_HEAD_URL = "http://img1.imgtn.bdimg.com/it/u=3995083595,771039139&fm=214&gp=0.jpg";
-
     protected String TAG = getTAG();
-    /**
-     * 设置控制台目标对象
-     */
     protected abstract String getTAG();
-    /**
-     * 设置是否执行Status Bar自适应
-     */
     public abstract boolean setTranslucent();
     private boolean isTranslucent = setTranslucent();
     public abstract boolean setDebug();
     protected boolean isDebug = setDebug();
-
-    /**
-     * 设置布局id
-     */
     public abstract int setLayoutId();
-    /**
-     * activity关联布局
-     */
     protected int layoutId = setLayoutId();
-    /**
-     * 上下文引用
-     */
     protected Context mContext = null;
     private SystemBarTintManager mTintManager;
     private View mDecorView;
@@ -74,26 +45,26 @@ public abstract class BaseActivity extends AppCompatActivity {
         setStatusBar();
         setContentView(layoutId);
         ButterKnife.bind(this);
-        mPreferences = mContext.getSharedPreferences(FILE_NAME, 0);
+        mPreferences = mContext.getSharedPreferences(Constant.FILE_NAME, 0);
     }
 
     public boolean putUser(User user){
         SharedPreferences.Editor editor = mPreferences.edit();
-        editor.putString(USER_ID, user.getId());
-        editor.putString(USER_HEAD_URL, user.getUrl());
-        editor.putString(USER_EMAIL, user.getEmail());
-        editor.putString(USER_NAME, user.getName());
-        editor.putInt(USER_CHAT_ID, user.getChatId());
+        editor.putString(Constant.USER_ID, user.getId());
+        editor.putString(Constant.USER_HEAD_URL, user.getUrl());
+        editor.putString(Constant.USER_EMAIL, user.getEmail());
+        editor.putString(Constant.USER_NAME, user.getName());
+        editor.putInt(Constant.USER_CHAT_ID, user.getChatId());
         return editor.commit();
     }
 
 
     public User getUser(){
-        String id = mPreferences.getString(USER_ID,"");
-        String name = mPreferences.getString(USER_NAME,"");
-        String url = mPreferences.getString(USER_HEAD_URL,USER_DEFAULT_HEAD_URL);
-        String email = mPreferences.getString(USER_EMAIL, "");
-        int chatId = mPreferences.getInt(USER_CHAT_ID, 0);
+        String id = mPreferences.getString(Constant.USER_ID,"");
+        String name = mPreferences.getString(Constant.USER_NAME,"");
+        String url = mPreferences.getString(Constant.USER_HEAD_URL,Constant.USER_DEFAULT_HEAD_URL);
+        String email = mPreferences.getString(Constant.USER_EMAIL, "");
+        int chatId = mPreferences.getInt(Constant.USER_CHAT_ID, 0);
         User user = new User(id,name, email, url, chatId);
         return user;
     }

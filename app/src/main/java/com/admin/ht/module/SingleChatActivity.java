@@ -25,6 +25,8 @@ import com.admin.ht.model.RecentMsg;
 import com.admin.ht.model.Result;
 import com.admin.ht.model.User;
 import com.admin.ht.retro.ApiClient;
+import com.admin.ht.retro.ApiClientImpl;
+import com.admin.ht.retro.RetrofitCallbackListener;
 import com.admin.ht.utils.LogUtils;
 import com.admin.ht.utils.ToastUtils;
 
@@ -52,25 +54,18 @@ import rx.schedulers.Schedulers;
 public class SingleChatActivity extends BaseActivity implements ChatTransDataEvent, MessageQoSEvent {
 
     private List<ChatLog> mData = new ArrayList<>();
-
     private ChatLogAdapter mAdapter = null;
-
     private User mTagUser;
-
     private User mUser;
 
     @Bind(R.id.send)
     ImageView mSend;
-
     @Bind(R.id.lab_title)
     TextView mTitle;
-
     @Bind(R.id.log_list)
     ListView mLog;
-
     @Bind(R.id.edit_text)
     EditText mEdit;
-
     @Bind(R.id.menu)
     ImageView mMenu;
 
@@ -106,7 +101,7 @@ public class SingleChatActivity extends BaseActivity implements ChatTransDataEve
             mUser = getUser();
         }
 
-        Item item = (Item) getIntent().getExtras().getSerializable(TARGET_USER);
+        Item item = (Item) getIntent().getExtras().getSerializable(Constant.TARGET_USER);
         mTagUser = new User();
         mTagUser.setId(item.getId());
         mTagUser.setName(item.getName());
@@ -157,7 +152,14 @@ public class SingleChatActivity extends BaseActivity implements ChatTransDataEve
                                 .setCancelable(false)
                                 .setPositiveButton("确定", new DialogInterface.OnClickListener() {
                                     public void onClick(DialogInterface dialog, int id) {
-                                        deleteShipSvc(mUser.getId(), mTagUser.getId());
+                                        ApiClientImpl.removeShipSvc(new RetrofitCallbackListener() {
+                                            @Override
+                                            public void receive(Result result) {
+                                                ToastUtils.showShort(mContext, "解除成功，返回上一页");
+                                            }
+                                        }, mUser.getId(), mTagUser.getId());
+
+
                                         SingleChatActivity.this.finish();
                                     }
                                 })
@@ -244,105 +246,26 @@ public class SingleChatActivity extends BaseActivity implements ChatTransDataEve
         return mTagUser;
     }
 
-    private void deleteShipSvc(String id, String fid) {
-        ApiClient.service.deleteShip(id, fid)
-                .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(new Subscriber<Result>() {
-                    Result result = null;
-                    @Override
-                    public void onCompleted() {
-                        String str;
-                        if (result == null) {
-                            str = "未知异常";
-                        } else if (result.getCode() == Constant.SUCCESS) {
-                            str = "删除成功";
-                        } else if (result.getCode() == Constant.FAIL) {
-                            str = "删除失败";
-                        } else if (result.getCode() == Constant.EXECUTING) {
-                            str = "服务器繁忙";
-                        } else {
-                            str = "未知异常";
-                        }
-
-                        if (isDebug) {
-                            LogUtils.i(TAG, str);
-                        }
-                    }
-
-                    @Override
-                    public void onNext(Result result) {
-                        this.result = result;
-                        if (isDebug) {
-                            LogUtils.i(TAG, result.toString());
-                        }
-                    }
-
-                    @Override
-                    public void onError(Throwable e) {
-                        if (isDebug) {
-                            LogUtils.i(TAG, e.toString());
-                        }
-                        e.printStackTrace();
-                    }
-                });
-    }
-
-
 
     private void getTagUserChatIdSvc(String id) {
-        ApiClient.service.getUserInfo(id)
-                .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(new Subscriber<Result>() {
-                    Result result = null;
-                    @Override
-                    public void onCompleted() {
-                        String str;
-                        if (result == null) {
-                            str = "未知异常";
-                        } else if (result.getCode() == Constant.SUCCESS) {
-                            str = "获取目标用户的信息";
-                            mTagUser = ApiClient.gson.fromJson(result.getModel().toString(), User.class);
-                            List<ChatLog> result =
-                                    ChatLogHelper.queryByLogno(mTagUser.getChatId()+"-"+mUser.getChatId());
-                            if(result.size() > 20){
-                                mData.addAll(result.subList(result.size()-21, result.size() -1));
-                            }else {
-                                mData.addAll(result);
-                            }
-                            mAdapter.notifyDataSetChanged();
-                            //移动到尾部
-                            mLog.smoothScrollToPosition(mLog.getCount() - 1);
-                        } else if (result.getCode() == Constant.FAIL) {
-                            str = "更新失败";
-                        } else if (result.getCode() == Constant.EXECUTING) {
-                            str = "服务器繁忙";
-                        } else {
-                            str = "未知异常";
-                        }
 
-                        if (isDebug) {
-                            LogUtils.i(TAG, str);
-                        }
-                    }
+        ApiClientImpl.getUserInfoSvc(new RetrofitCallbackListener() {
+            @Override
+            public void receive(Result result) {
+                mTagUser = ApiClient.gson.fromJson(result.getModel().toString(), User.class);
+                List<ChatLog> data =
+                        ChatLogHelper.queryByLogno(mTagUser.getChatId()+"-"+mUser.getChatId());
+                if(data.size() > 20){
+                    mData.addAll(data.subList(data.size()-21, data.size() -1));
+                }else {
+                    mData.addAll(data);
+                }
+                mAdapter.notifyDataSetChanged();
+                //移动到尾部
+                mLog.smoothScrollToPosition(mLog.getCount() - 1);
+            }
+        }, id);
 
-                    @Override
-                    public void onNext(Result result) {
-                        this.result = result;
-                        if (isDebug) {
-                            LogUtils.i(TAG, result.toString());
-                        }
-                    }
-
-                    @Override
-                    public void onError(Throwable e) {
-                        if (isDebug) {
-                            LogUtils.i(TAG, e.toString());
-                        }
-                        e.printStackTrace();
-                    }
-                });
     }
 
 
@@ -352,7 +275,7 @@ public class SingleChatActivity extends BaseActivity implements ChatTransDataEve
         ChatLog log = new ChatLog();
         log.setLogno(userId +"-"+ mUser.getChatId());
         log.setContent(content);
-        log.setUrl(BaseActivity.USER_DEFAULT_HEAD_URL);
+        log.setUrl(Constant.USER_DEFAULT_HEAD_URL);
         log.setName(userId + "");
         log.setType(2);
         User user = this.getTargetUser();

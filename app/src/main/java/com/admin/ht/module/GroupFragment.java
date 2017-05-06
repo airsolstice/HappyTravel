@@ -25,7 +25,10 @@ import com.admin.ht.model.RecentMsg;
 import com.admin.ht.model.Result;
 import com.admin.ht.model.User;
 import com.admin.ht.retro.ApiClient;
+import com.admin.ht.retro.ApiClientImpl;
+import com.admin.ht.retro.RetrofitCallbackListener;
 import com.admin.ht.utils.LogUtils;
+import com.admin.ht.utils.ToastUtils;
 import com.google.gson.reflect.TypeToken;
 
 import net.openmob.mobileimsdk.android.event.ChatTransDataEvent;
@@ -38,16 +41,15 @@ import java.util.Date;
 import java.util.List;
 
 import rx.Subscriber;
-import rx.android.schedulers.AndroidSchedulers;
 import rx.schedulers.Schedulers;
 
 /**
  * 群组碎片类
- *
+ * <p>
  * Created by Solstice on 3/12/2017.
  */
 public class GroupFragment extends BaseFragment
-        implements AdapterView.OnItemClickListener,AdapterView.OnItemLongClickListener,
+        implements AdapterView.OnItemClickListener, AdapterView.OnItemLongClickListener,
         ChatTransDataEvent, MessageQoSEvent {
 
     private ListView mListView = null;
@@ -69,7 +71,7 @@ public class GroupFragment extends BaseFragment
     @Override
     public View onCreateView(LayoutInflater inflater,
                              @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        View v = inflater.inflate(R.layout.layout_group,null);
+        View v = inflater.inflate(R.layout.layout_group, null);
         mListView = (ListView) v.findViewById(R.id.list_view);
         mAdapter = new ChatGroupListAdapter(getContext(), mData, null);
         mListView.setAdapter(mAdapter);
@@ -82,7 +84,24 @@ public class GroupFragment extends BaseFragment
     @Override
     public void onResume() {
         super.onResume();
-        listChatGroupSvc(mUser.getId());
+        ApiClientImpl.getChatGroupsSvc(new RetrofitCallbackListener() {
+            @Override
+            public void receive(Result result) {
+                mData.clear();
+                Type type = new TypeToken<ArrayList<ChatMember>>() {
+                }.getType();
+                List<ChatMember> list = ApiClient.gson.fromJson(result.getModel().toString(), type);
+                mData.addAll(list);
+                Activity a = (Activity) getContext();
+                a.runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        mAdapter.notifyDataSetChanged();
+                    }
+                });
+            }
+        }, mUser.getId());
+
     }
 
     @Override
@@ -99,7 +118,18 @@ public class GroupFragment extends BaseFragment
                 .setCancelable(false)
                 .setPositiveButton("确定", new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int id) {
-                        quitSvc(mData.get(position).getGroupId(), mData.get(position).getMemberId());
+                        ApiClientImpl.quitChatGroupsSvc(new RetrofitCallbackListener() {
+                            @Override
+                            public void receive(Result result) {
+                                Activity a = (Activity) getContext();
+                                a.runOnUiThread(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        ToastUtils.showShort(getContext(), "退出该群");
+                                    }
+                                });
+                            }
+                        }, mData.get(position).getGroupId(), mData.get(position).getMemberId());
                         mData.remove(position);
                         mAdapter.notifyDataSetChanged();
                     }
@@ -120,113 +150,6 @@ public class GroupFragment extends BaseFragment
     @Override
     public boolean setDebug() {
         return true;
-    }
-
-
-    private void listChatGroupSvc(String id) {
-        ApiClient.service.getGroups(id)
-                .subscribeOn(Schedulers.newThread())
-                //.observeOn(AndroidSchedulers.mainThread())
-                .observeOn(Schedulers.newThread())
-                .subscribe(new Subscriber<Result>() {
-                    Result result = null;
-                    @Override
-                    public void onCompleted() {
-                        String str;
-                        if (result == null) {
-                            str = "未知异常";
-                        } else if (result.getCode() == Constant.SUCCESS) {
-                            str = "获取聊天群组列表";
-                            mData.clear();
-                            Type type = new TypeToken<ArrayList<ChatMember>>() {}.getType();
-                            List<ChatMember> list = ApiClient.gson.fromJson(result.getModel().toString(), type);
-                            mData.addAll(list);
-
-                            Activity a = getActivity();
-                            if(a == null){
-                                return;
-                            }
-                            getActivity().runOnUiThread(new Runnable() {
-                                @Override
-                                public void run() {
-                                    mAdapter.notifyDataSetChanged();
-                                }
-                            });
-                        } else if (result.getCode() == Constant.FAIL) {
-                            str = "获取失败";
-                        } else if (result.getCode() == Constant.EXECUTING) {
-                            str = "服务器繁忙";
-                        } else {
-                            str = "未知异常";
-                        }
-
-                        if (isDebug) {
-                            LogUtils.i(TAG, str);
-                        }
-                    }
-
-                    @Override
-                    public void onNext(Result result) {
-                        this.result = result;
-                        if (isDebug) {
-                            LogUtils.i(TAG, result.toString());
-                        }
-                    }
-
-                    @Override
-                    public void onError(Throwable e) {
-                        if (isDebug) {
-                            LogUtils.i(TAG, e.toString());
-                        }
-                        e.printStackTrace();
-                    }
-                });
-    }
-
-
-
-    private void quitSvc(int groupId, String memberId) {
-        ApiClient.service.quitGroup(groupId, memberId)
-                .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(new Subscriber<Result>() {
-                    Result result = null;
-                    @Override
-                    public void onCompleted() {
-                        String str;
-                        if (result == null) {
-                            str = "未知异常";
-                        } else if (result.getCode() == Constant.SUCCESS) {
-                            str = "退出成功";
-                        } else if (result.getCode() == Constant.FAIL) {
-                            str = "退出失败";
-                        } else if (result.getCode() == Constant.EXECUTING) {
-                            str = "服务器繁忙";
-                        } else {
-                            str = "未知异常";
-                        }
-
-                        if (isDebug) {
-                            LogUtils.i(TAG, str);
-                        }
-                    }
-
-                    @Override
-                    public void onNext(Result result) {
-                        this.result = result;
-                        if (isDebug) {
-                            LogUtils.i(TAG, result.toString());
-                        }
-                    }
-
-                    @Override
-                    public void onError(Throwable e) {
-                        if (isDebug) {
-                            LogUtils.i(TAG, e.toString());
-                        }
-                        e.printStackTrace();
-                    }
-                });
     }
 
     public void saveMsg(User user) {
@@ -253,60 +176,24 @@ public class GroupFragment extends BaseFragment
     }
 
     private void getUserInfoSvc(final int chatId, final String content) {
-        ApiClient.service.getUserInfoByChatId(chatId)
-                .subscribeOn(Schedulers.newThread())
-                //.observeOn(AndroidSchedulers.mainThread())
-                .observeOn(Schedulers.newThread())
-                .subscribe(new Subscriber<Result>() {
-                    Result result = null;
 
-                    @Override
-                    public void onCompleted() {
-                        String str;
-                        if (result == null) {
-                            str = "未知异常";
-                        } else if (result.getCode() == Constant.SUCCESS) {
-                            str = "获取用户信息";
-                            User user = ApiClient.gson.fromJson(result.getModel().toString(), User.class);
-                            saveMsg(user);
-                            ChatLog entity = new ChatLog();
-                            entity.setLogno(user.getChatId() + "-" + mUser.getChatId());
-                            entity.setName(user.getName() + "(" + user.getId() + ")");
-                            entity.setContent(content);
-                            entity.setType(2);
-                            entity.setDate(new Date(System.currentTimeMillis()));
-                            entity.setUrl(user.getUrl());
-                            ChatLogHelper.insert(entity);
-                            List<ChatLog> list = ChatLogHelper.queryAll();
-                            LogUtils.d(TAG, "数据记录长度增到[" + list.size() + "]");
-                        } else if (result.getCode() == Constant.FAIL) {
-                            str = "获取失败";
-                        } else if (result.getCode() == Constant.EXECUTING) {
-                            str = "服务器繁忙";
-                        } else {
-                            str = "未知异常";
-                        }
-                        if (isDebug) {
-                            LogUtils.i(TAG, str);
-                        }
-                    }
-
-                    @Override
-                    public void onNext(Result result) {
-                        this.result = result;
-                        if (isDebug) {
-                            LogUtils.i(TAG, result.toString());
-                        }
-                    }
-
-                    @Override
-                    public void onError(Throwable e) {
-                        if (isDebug) {
-                            LogUtils.i(TAG, e.toString());
-                        }
-                        e.printStackTrace();
-                    }
-                });
+        ApiClientImpl.getUserInfoSvc(new RetrofitCallbackListener() {
+            @Override
+            public void receive(Result result) {
+                User user = ApiClient.gson.fromJson(result.getModel().toString(), User.class);
+                saveMsg(user);
+                ChatLog entity = new ChatLog();
+                entity.setLogno(user.getChatId() + "-" + mUser.getChatId());
+                entity.setName(user.getName() + "(" + user.getId() + ")");
+                entity.setContent(content);
+                entity.setType(2);
+                entity.setDate(new Date(System.currentTimeMillis()));
+                entity.setUrl(user.getUrl());
+                ChatLogHelper.insert(entity);
+                List<ChatLog> list = ChatLogHelper.queryAll();
+                LogUtils.d(TAG, "数据记录长度增到[" + list.size() + "]");
+            }
+        }, chatId);
     }
 
     @Override

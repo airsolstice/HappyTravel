@@ -17,19 +17,18 @@ import android.widget.Toast;
 
 import com.admin.ht.R;
 import com.admin.ht.adapter.ChatGroupListAdapter;
-import com.admin.ht.adapter.ResultListAdapter;
 import com.admin.ht.base.BaseActivity;
 import com.admin.ht.base.Constant;
 import com.admin.ht.model.ChatMember;
 import com.admin.ht.model.Result;
 import com.admin.ht.model.User;
 import com.admin.ht.retro.ApiClient;
+import com.admin.ht.retro.ApiClientImpl;
+import com.admin.ht.retro.RetrofitCallbackListener;
 import com.admin.ht.utils.KeyBoardUtils;
 import com.admin.ht.utils.LogUtils;
 import com.admin.ht.utils.ToastUtils;
-import com.google.gson.reflect.TypeToken;
 
-import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -73,7 +72,7 @@ public class GroupAdditionActivity extends BaseActivity {
                             Toast.makeText(getApplicationContext(), "群名不能为空" + input, Toast.LENGTH_LONG).show();
                         }
                         else {
-                            createSvc(mUser.getId(), input);
+                            createGroupSvc(mUser.getId(), input);
                         }
                     }
                 })
@@ -81,52 +80,18 @@ public class GroupAdditionActivity extends BaseActivity {
                 .show();
     }
 
-    public void createSvc(String memberId, String groupName) {
+    public void createGroupSvc(String memberId, String groupName) {
 
         if (TextUtils.isEmpty(groupName)) {
             return;
         }
 
-        ApiClient.service.create(memberId, groupName, 1)
-                .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(new Subscriber<Result>() {
-                    Result result = null;
-                    ChatGroupListAdapter adapter = null;
-                    @Override
-                    public void onCompleted() {
-                        String str;
-                        if (result == null) {
-                            str = "未知异常";
-                        } else if (result.getCode() == Constant.SUCCESS) {
-                            str = "创建成功";
-
-                        } else if (result.getCode() == Constant.FAIL) {
-                            str = "创建失败";
-                        } else if (result.getCode() == Constant.EXECUTING) {
-                            str = "服务器繁忙";
-                        } else {
-                            str = "未知异常";
-                        }
-                        LogUtils.v(TAG, str);
-                        ToastUtils.showShort(mContext, str);
-                    }
-
-                    @Override
-                    public void onNext(Result result) {
-                        if (isDebug) {
-                            LogUtils.i(TAG, result.toString());
-                        }
-                        this.result = result;
-                    }
-
-                    @Override
-                    public void onError(Throwable e) {
-                        e.printStackTrace();
-                        ToastUtils.showShort(mContext, "未知异常");
-                    }
-                });
-
+        ApiClientImpl.createGroupSvc(new RetrofitCallbackListener() {
+            @Override
+            public void receive(Result result) {
+                ToastUtils.showShort(mContext, "群创建成功");
+            }
+        }, memberId, groupName);
     }
 
 
@@ -141,62 +106,32 @@ public class GroupAdditionActivity extends BaseActivity {
             return;
         }
 
-        LogUtils.e(TAG, key);
+        ApiClientImpl.searchGroupSvc(new RetrofitCallbackListener() {
+            ChatGroupListAdapter adapter = null;
+            @Override
+            public void receive(Result result) {
 
-        ApiClient.service.searchGroup(key)
-                .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(new Subscriber<Result>() {
-                    Result result = null;
-                    ChatGroupListAdapter adapter = null;
-                    @Override
-                    public void onCompleted() {
-                        String str;
-                        if (result == null) {
-                            str = "未知异常";
-                        } else if (result.getCode() == Constant.SUCCESS) {
-                            str = "搜索结果";
-                            mData.clear();
-                            LogUtils.e(TAG, result.getModel().toString());
-                            ChatMember list = ApiClient.gson.fromJson(result.getModel().toString(), ChatMember.class);
-                            mData.add(list);
-                            if (mUser == null) {
-                                mUser = getUser();
-                            }
-                            adapter = new ChatGroupListAdapter(mContext, mData, mUser.getId());
-                            mResultList.setAdapter(adapter);
-                            mTip.setText("");
-
-                        } else if (result.getCode() == Constant.FAIL) {
-                            str = "搜索失败";
-                            mTip.setText("未找到相关群");
-                            if(adapter != null){
-                                mData.clear();
-                                adapter.notifyDataSetChanged();
-                            }
-                        } else if (result.getCode() == Constant.EXECUTING) {
-                            str = "服务器繁忙";
-                        } else {
-                            str = "未知异常";
-                        }
-                        LogUtils.v(TAG, str);
+                if(result.getCode() == 200){
+                    mData.clear();
+                    LogUtils.e(TAG, result.getModel().toString());
+                    ChatMember list = ApiClient.gson.fromJson(result.getModel().toString(), ChatMember.class);
+                    mData.add(list);
+                    if (mUser == null) {
+                        mUser = getUser();
                     }
-
-                    @Override
-                    public void onNext(Result result) {
-                        if (isDebug) {
-                            LogUtils.i(TAG, result.toString());
-                        }
-                        this.result = result;
+                    adapter = new ChatGroupListAdapter(mContext, mData, mUser.getId());
+                    mResultList.setAdapter(adapter);
+                    mTip.setText("");
+                } else{
+                    mTip.setText("未找到相关群");
+                    if(adapter != null){
+                        mData.clear();
+                        adapter.notifyDataSetChanged();
                     }
+                }
 
-                    @Override
-                    public void onError(Throwable e) {
-                        e.printStackTrace();
-                        ToastUtils.showShort(mContext, "未知异常");
-                    }
-                });
-
+            }
+        }, key);
     }
 
 

@@ -1,6 +1,7 @@
 package com.admin.ht.module;
 
 import android.app.Activity;
+import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
@@ -19,6 +20,7 @@ import android.widget.TextView;
 import com.admin.ht.R;
 import com.admin.ht.base.BaseActivity;
 import com.admin.ht.base.BaseFragment;
+import com.admin.ht.base.Constant;
 import com.admin.ht.model.ChatMember;
 import com.admin.ht.model.MarkerInfo;
 import com.admin.ht.model.Result;
@@ -72,6 +74,7 @@ public class MapFragment extends BaseFragment
     private List<ChatMember> mGroupData = new ArrayList<>();
     private List<ChatMember> mData = new ArrayList<>();
     private List<Marker> mMarkerData = new ArrayList<>();
+    Marker mMarker = null;
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
@@ -98,6 +101,8 @@ public class MapFragment extends BaseFragment
         left.setOnClickListener(this);
         ImageView right = (ImageView) view.findViewById(R.id.right_move);
         right.setOnClickListener(this);
+        TextView chat = (TextView) view.findViewById(R.id.chat);
+        chat.setOnClickListener(this);
 
         return view;
     }
@@ -169,7 +174,7 @@ public class MapFragment extends BaseFragment
         if (mUser == null) {
             mUser = getUser();
         }
-        ApiClientImpl.getGroupsSvc(new RetrofitCallbackListener() {
+        ApiClientImpl.getChatGroupsSvc(new RetrofitCallbackListener() {
             @Override
             public void receive(Result result) {
                 mGroupData.clear();
@@ -228,6 +233,13 @@ public class MapFragment extends BaseFragment
                 mData.addAll(list);
 
                 for (ChatMember member : mData) {
+
+                    if(mUser != null){
+                        if(member.getMemberId().equals(mUser.getId())){
+                            continue;
+                        }
+                    }
+
                     ApiClientImpl.getUserMarkerSvc(new RetrofitCallbackListener() {
                         @Override
                         public void receive(Result result) {
@@ -237,8 +249,6 @@ public class MapFragment extends BaseFragment
                         }
                     }, member.getMemberId());
                 }
-
-
             }
         }, mGroupData.get(index).getGroupId());
 
@@ -246,6 +256,11 @@ public class MapFragment extends BaseFragment
 
     @Override
     public void onClick(View v) {
+
+        if(mGroupData.size() == 0){
+            ToastUtils.showShort(getContext(), "请添加群组！");
+            return;
+        }
 
         switch (v.getId()) {
             case R.id.left_move:
@@ -280,6 +295,9 @@ public class MapFragment extends BaseFragment
                 break;
 
             case R.id.chat:
+                Intent intent = new Intent(getContext(), GroupChatActivity.class);
+                intent.putExtra(Constant.CHAT_GROUP_INFO, mGroupData.get(index));
+                startActivity(intent);
                 break;
         }
 
@@ -303,6 +321,37 @@ public class MapFragment extends BaseFragment
             ToastUtils.showShort(getContext(), "位置更新失败");
             return;
         }
+
+        ApiClientImpl.getUserMarkerSvc(new RetrofitCallbackListener() {
+            @Override
+            public void receive(Result result) {
+                if(mMarker != null){
+                    mMarker.remove();
+                }
+
+                final MarkerInfo info = ApiClient.gson.fromJson(result.getModel().toString(), MarkerInfo.class);
+                final View v = View.inflate(getActivity(), R.layout.view_marker, null);
+                final SimpleDraweeView icon = (SimpleDraweeView) v.findViewById(R.id.icon);
+                int rw = icon.getMeasuredWidth();
+                int rh = icon.getMeasuredHeight();
+                ImageSize targetSize = new ImageSize(rw, rh);
+                ImageLoader.getInstance().loadImage(info.getUrl(), targetSize, ImageUtils.getDisplayImageOptions(),
+                        new SimpleImageLoadingListener() {
+                            @Override
+                            public void onLoadingComplete(String imageUri, View view, Bitmap loadedImage) {
+                                loadedImage = BitmapUtils.makeRoundCorner(loadedImage);
+                                loadedImage = BitmapUtils.zoomBitmap(loadedImage, 50, 50);
+                                icon.setImageBitmap(loadedImage);
+                                Bitmap bitmap = BitmapUtils.convertViewToBitmap(v);
+                                 mMarker = aMap.addMarker(new MarkerOptions().anchor(0.5f, 1)
+                                        .position(new LatLng(info.getLat(), info.getLng()))
+                                        .title(info.getName())
+                                        .icon(BitmapDescriptorFactory.fromBitmap(bitmap)));
+                            }
+                        });
+            }
+        }, mUser.getId());
+
         ApiClientImpl.updatePosSvc(null, mUser.getId(),
                 new LatLng(location.getLatitude(), location.getLongitude()));
     }
