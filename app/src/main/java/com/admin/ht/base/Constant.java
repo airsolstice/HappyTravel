@@ -28,4 +28,7 @@ public class Constant {
     public static String USER_CHAT_ID = "user_chat_id";
     public static String USER_DEFAULT_HEAD_URL = "http://img1.imgtn.bdimg.com/it/u=3995083595,771039139&fm=214&gp=0.jpg";
 
+    public static final int NEW_MDG = 0x456;
+    public static final int CHANGE_FOCUS = 0x789;
+    public static final String SERVER_IP = "192.168.1.133";
 }

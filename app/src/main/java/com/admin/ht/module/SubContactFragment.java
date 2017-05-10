@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.annotation.Nullable;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -13,7 +14,6 @@ import android.widget.ExpandableListView;
 
 import com.admin.ht.R;
 import com.admin.ht.adapter.ExpandAdapter;
-import com.admin.ht.base.BaseActivity;
 import com.admin.ht.base.BaseFragment;
 import com.admin.ht.base.Constant;
 import com.admin.ht.db.ChatLogHelper;
@@ -28,8 +28,10 @@ import com.admin.ht.retro.ApiClient;
 import com.admin.ht.retro.ApiClientImpl;
 import com.admin.ht.retro.RetrofitCallbackListener;
 import com.admin.ht.utils.LogUtils;
+import com.admin.ht.utils.TipUtils;
 import com.google.gson.reflect.TypeToken;
 
+import net.openmob.mobileimsdk.android.ClientCoreSDK;
 import net.openmob.mobileimsdk.android.event.ChatTransDataEvent;
 import net.openmob.mobileimsdk.android.event.MessageQoSEvent;
 import net.openmob.mobileimsdk.server.protocal.Protocal;
@@ -38,9 +40,6 @@ import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-
-import rx.Subscriber;
-import rx.schedulers.Schedulers;
 
 /**
  * 个人分组碎片类
@@ -54,13 +53,18 @@ public class SubContactFragment extends BaseFragment implements
     private ExpandAdapter mAdapter = null;
     private List<List<Item>> mData = new ArrayList<>();
     private List<String> mGroupData = new ArrayList<>();
+    private Handler mHandler = null;
+
+
+    public SubContactFragment(Handler handler){
+        this.mHandler = handler;
+    }
+
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        //注册IM回调
-        //ClientCoreSDK.getInstance().setChatTransDataEvent(this);
-        //ClientCoreSDK.getInstance().setMessageQoSEvent(this);
+
         //配置当前用户信息
         if (mUser == null) {
             mUser = getUser();
@@ -83,6 +87,9 @@ public class SubContactFragment extends BaseFragment implements
     @Override
     public void onResume() {
         super.onResume();
+        //注册IM回调
+        ClientCoreSDK.getInstance().setChatTransDataEvent(this);
+        ClientCoreSDK.getInstance().setMessageQoSEvent(this);
         ApiClientImpl.getGroupsSvc(new RetrofitCallbackListener() {
             @Override
             public void receive(Result result) {
@@ -123,7 +130,7 @@ public class SubContactFragment extends BaseFragment implements
                 a.runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
-                        mAdapter = new ExpandAdapter(getActivity(), mGroupData, mData);
+                        mAdapter = new ExpandAdapter(getContext(), mGroupData, mData);
                         mListView.setAdapter(mAdapter);
                         SharedPreferences.Editor editor = mPreferences.edit();
                         LogUtils.e(TAG, mGroupData.size() + "");
@@ -151,7 +158,7 @@ public class SubContactFragment extends BaseFragment implements
         Item entity = mAdapter.getChild(groupPosition, childPosition);
         Intent intent = new Intent(getActivity(), SingleChatActivity.class);
         intent.putExtra(Constant.TARGET_USER, entity);
-        getActivity().startActivity(intent);
+        startActivity(intent);
 
         return true;
     }
@@ -161,7 +168,9 @@ public class SubContactFragment extends BaseFragment implements
         List<RecentMsg> list = RecentMsgHelper.queryById(mUser.getId());
         for (RecentMsg entity : list) {
             if (entity.getId().equals(user.getId())) {
+
                 entity.setCount(entity.getCount() + 1);
+                entity.setTime(new Date(System.currentTimeMillis()));
                 RecentMsgHelper.update(entity);
                 flag = false;
                 break;
@@ -175,36 +184,34 @@ public class SubContactFragment extends BaseFragment implements
             entity.setUrl(user.getUrl());
             entity.setName(user.getName() + "(" + user.getId() + ")");
             entity.setNote(user.getNote());
+            entity.setTime(new Date(System.currentTimeMillis()));
             RecentMsgHelper.insert(entity);
         }
+
     }
 
-    private void getUserInfoSvc(final int chatId, final String content) {
-
+    @Override
+    public void onTransBuffer(String fingerPrintOfProtocol, int userId, final String content) {
+        Log.d(TAG, "收到来自用户[" + userId + "]的消息:" + content + "," + fingerPrintOfProtocol);
+        TipUtils.tipMsg(getContext());
         ApiClientImpl.getUserInfoSvc(new RetrofitCallbackListener() {
             @Override
             public void receive(Result result) {
                 User user = ApiClient.gson.fromJson(result.getModel().toString(), User.class);
                 saveMsg(user);
-                ChatLog entity = new ChatLog();
-                entity.setLogno(user.getChatId() + "-" + mUser.getChatId());
-                entity.setName(user.getName() + "(" + user.getId() + ")");
-                entity.setContent(content);
-                entity.setType(2);
-                entity.setDate(new Date(System.currentTimeMillis()));
-                entity.setUrl(user.getUrl());
-                ChatLogHelper.insert(entity);
+                ChatLog log = new ChatLog();
+                log.setLogno(user.getChatId() + "-" + mUser.getChatId());
+                log.setName(user.getName() + "(" + user.getId() + ")");
+                log.setContent(content);
+                log.setType(2);
+                log.setDate(new Date(System.currentTimeMillis()));
+                log.setUrl(user.getUrl());
+                ChatLogHelper.insert(log);
                 List<ChatLog> list = ChatLogHelper.queryAll();
                 LogUtils.d(TAG, "数据记录长度增到[" + list.size() + "]");
             }
-        }, chatId);
-    }
-
-
-    @Override
-    public void onTransBuffer(String fingerPrintOfProtocol, int userId, String content) {
-        Log.d(TAG, "收到来自用户[" + userId + "]的消息:" + content + "," + fingerPrintOfProtocol);
-        getUserInfoSvc(userId, content);
+        }, userId);
+        mHandler.sendEmptyMessage(Constant.NEW_MDG);
     }
 
     @Override

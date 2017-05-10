@@ -6,6 +6,8 @@ import org.greenrobot.greendao.annotation.Entity;
 import org.greenrobot.greendao.annotation.Generated;
 import org.greenrobot.greendao.annotation.Id;
 
+import java.util.Date;
+
 /**
  * 最近聊天记录实体类
  *
@@ -13,13 +15,12 @@ import org.greenrobot.greendao.annotation.Id;
  */
 @Entity
 public class RecentMsg {
-
-    /*好友id，主键*/
     @Id
+    private Long no;
+    /*好友id*/
     private String id;
     /*聊天id，用于区分每个用户的列表*/
     private String owner;
-    private int no;
     /*好友昵称*/
     private String name;
     /*好友头像链接*/
@@ -28,22 +29,24 @@ public class RecentMsg {
     private int count = 0;
     /*好友说明*/
     private String note;
-    /*好友所在分组id*/
+    /*接收消息的时间*/
+    private Date time;
 
     public RecentMsg(){
 
     }
 
-    @Generated(hash = 416343097)
-    public RecentMsg(String id, String owner, int no, String name, String url,
-            int count, String note) {
+    @Generated(hash = 484197876)
+    public RecentMsg(Long no, String id, String owner, String name, String url,
+            int count, String note, Date time) {
+        this.no = no;
         this.id = id;
         this.owner = owner;
-        this.no = no;
         this.name = name;
         this.url = url;
         this.count = count;
         this.note = note;
+        this.time = time;
     }
 
     public String getId() {
@@ -62,11 +65,11 @@ public class RecentMsg {
         this.owner = owner;
     }
 
-    public int getNo() {
+    public Long getNo() {
         return no;
     }
 
-    public void setNo(int no) {
+    public void setNo(Long no) {
         this.no = no;
     }
 
@@ -100,6 +103,14 @@ public class RecentMsg {
 
     public void setNote(String note) {
         this.note = note;
+    }
+
+    public Date getTime() {
+        return time;
+    }
+
+    public void setTime(Date time) {
+        this.time = time;
     }
 
     @Override

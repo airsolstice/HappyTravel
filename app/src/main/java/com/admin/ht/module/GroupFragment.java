@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AlertDialog;
 import android.util.Log;
@@ -28,9 +29,11 @@ import com.admin.ht.retro.ApiClient;
 import com.admin.ht.retro.ApiClientImpl;
 import com.admin.ht.retro.RetrofitCallbackListener;
 import com.admin.ht.utils.LogUtils;
+import com.admin.ht.utils.TipUtils;
 import com.admin.ht.utils.ToastUtils;
 import com.google.gson.reflect.TypeToken;
 
+import net.openmob.mobileimsdk.android.ClientCoreSDK;
 import net.openmob.mobileimsdk.android.event.ChatTransDataEvent;
 import net.openmob.mobileimsdk.android.event.MessageQoSEvent;
 import net.openmob.mobileimsdk.server.protocal.Protocal;
@@ -53,15 +56,19 @@ public class GroupFragment extends BaseFragment
         ChatTransDataEvent, MessageQoSEvent {
 
     private ListView mListView = null;
-    private List<ChatMember> mData = new ArrayList<>();
+    private List<ChatMember> mData = null;
     private ChatGroupListAdapter mAdapter = null;
+    private Handler mHandler = null;
+
+    public GroupFragment(Handler handler){
+        this.mHandler = handler;
+    }
+
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        //注册IM回调
-        //ClientCoreSDK.getInstance().setChatTransDataEvent(this);
-        //ClientCoreSDK.getInstance().setMessageQoSEvent(this);
+
         //配置当前用户信息
         if (mUser == null) {
             mUser = getUser();
@@ -73,6 +80,7 @@ public class GroupFragment extends BaseFragment
                              @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View v = inflater.inflate(R.layout.layout_group, null);
         mListView = (ListView) v.findViewById(R.id.list_view);
+        mData = new ArrayList<>();
         mAdapter = new ChatGroupListAdapter(getContext(), mData, null);
         mListView.setAdapter(mAdapter);
         mListView.setOnItemClickListener(this);
@@ -84,10 +92,15 @@ public class GroupFragment extends BaseFragment
     @Override
     public void onResume() {
         super.onResume();
+        //注册IM回调
+        ClientCoreSDK.getInstance().setChatTransDataEvent(this);
+        ClientCoreSDK.getInstance().setMessageQoSEvent(this);
+
         ApiClientImpl.getChatGroupsSvc(new RetrofitCallbackListener() {
             @Override
             public void receive(Result result) {
                 mData.clear();
+                LogUtils.e(TAG, result.getModel().toString());
                 Type type = new TypeToken<ArrayList<ChatMember>>() {
                 }.getType();
                 List<ChatMember> list = ApiClient.gson.fromJson(result.getModel().toString(), type);
@@ -157,7 +170,9 @@ public class GroupFragment extends BaseFragment
         List<RecentMsg> list = RecentMsgHelper.queryById(mUser.getId());
         for (RecentMsg entity : list) {
             if (entity.getId().equals(user.getId())) {
+                LogUtils.e(TAG, user.getId());
                 entity.setCount(entity.getCount() + 1);
+                entity.setTime(new Date(System.currentTimeMillis()));
                 RecentMsgHelper.update(entity);
                 flag = false;
                 break;
@@ -171,35 +186,34 @@ public class GroupFragment extends BaseFragment
             entity.setUrl(user.getUrl());
             entity.setName(user.getName() + "(" + user.getId() + ")");
             entity.setNote(user.getNote());
+            entity.setTime(new Date(System.currentTimeMillis()));
             RecentMsgHelper.insert(entity);
         }
+
     }
 
-    private void getUserInfoSvc(final int chatId, final String content) {
-
+    @Override
+    public void onTransBuffer(String fingerPrintOfProtocol, int userId, final String content) {
+        Log.d(TAG, "收到来自用户[" + userId + "]的消息:" + content + "," + fingerPrintOfProtocol);
+        TipUtils.tipMsg(getContext());
         ApiClientImpl.getUserInfoSvc(new RetrofitCallbackListener() {
             @Override
             public void receive(Result result) {
                 User user = ApiClient.gson.fromJson(result.getModel().toString(), User.class);
                 saveMsg(user);
-                ChatLog entity = new ChatLog();
-                entity.setLogno(user.getChatId() + "-" + mUser.getChatId());
-                entity.setName(user.getName() + "(" + user.getId() + ")");
-                entity.setContent(content);
-                entity.setType(2);
-                entity.setDate(new Date(System.currentTimeMillis()));
-                entity.setUrl(user.getUrl());
-                ChatLogHelper.insert(entity);
+                ChatLog log = new ChatLog();
+                log.setLogno(user.getChatId() + "-" + mUser.getChatId());
+                log.setName(user.getName() + "(" + user.getId() + ")");
+                log.setContent(content);
+                log.setType(2);
+                log.setDate(new Date(System.currentTimeMillis()));
+                log.setUrl(user.getUrl());
+                ChatLogHelper.insert(log);
                 List<ChatLog> list = ChatLogHelper.queryAll();
                 LogUtils.d(TAG, "数据记录长度增到[" + list.size() + "]");
             }
-        }, chatId);
-    }
-
-    @Override
-    public void onTransBuffer(String fingerPrintOfProtocol, int userId, String content) {
-        Log.d(TAG, "收到来自用户[" + userId + "]的消息:" + content + "," + fingerPrintOfProtocol);
-        getUserInfoSvc(userId, content);
+        }, userId);
+        mHandler.sendEmptyMessage(Constant.NEW_MDG);
     }
 
     @Override

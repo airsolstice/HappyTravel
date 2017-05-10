@@ -1,5 +1,6 @@
 package com.admin.ht.retro;
 
+import com.admin.ht.base.Constant;
 import com.admin.ht.model.Result;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -258,7 +259,7 @@ public class ApiClient {
             //设置OKClement代理
             .client(client)
             //这里最后面必须能带“/”
-            .baseUrl("http://192.168.2.227:8080/frame-study-demo/")
+            .baseUrl("http://" + Constant.SERVER_IP +":8080/frame-study-demo/")
             //设置json默认解析器
             //.addConverterFactory(GsonConverterFactory.createGroup(gson)
             //设置json自定义解析器

@@ -1,5 +1,6 @@
 package com.admin.ht.module;
 
+import android.app.Activity;
 import android.content.DialogInterface;
 import android.os.Bundle;
 import android.support.v7.app.AlertDialog;
@@ -28,6 +29,7 @@ import com.admin.ht.retro.ApiClient;
 import com.admin.ht.retro.ApiClientImpl;
 import com.admin.ht.retro.RetrofitCallbackListener;
 import com.admin.ht.utils.LogUtils;
+import com.admin.ht.utils.TipUtils;
 import com.admin.ht.utils.ToastUtils;
 
 import net.openmob.mobileimsdk.android.ClientCoreSDK;
@@ -53,7 +55,7 @@ import rx.schedulers.Schedulers;
  */
 public class SingleChatActivity extends BaseActivity implements ChatTransDataEvent, MessageQoSEvent {
 
-    private List<ChatLog> mData = new ArrayList<>();
+    private List<ChatLog> mData = null;
     private ChatLogAdapter mAdapter = null;
     private User mTagUser;
     private User mUser;
@@ -111,19 +113,7 @@ public class SingleChatActivity extends BaseActivity implements ChatTransDataEve
         mTagUser.setChatId(-1);
         getTagUserChatIdSvc(mTagUser.getId());
 
-        if (isDebug) {
-            Log.d(TAG, "目标用户=" + mTagUser.getId());
-        }
-//        RecentMsg entity = new RecentMsg();
-//        entity.setOwner(mUser.getId());
-//        entity.setId(item.getId());
-//        entity.setCount(0);
-//        entity.setUrl(item.getUrl());
-//        entity.setName(item.getName() + "(" + item.getId() + ")");
-//        entity.setNote(item.getNote());
-//        RecentMsgHelper.update(entity);
-
-        mTitle.setText(mTagUser.getName());
+        mData = new ArrayList<>();
         mAdapter = new ChatLogAdapter(mContext, mData);
         mLog.setAdapter(mAdapter);
 
@@ -158,7 +148,6 @@ public class SingleChatActivity extends BaseActivity implements ChatTransDataEve
                                                 ToastUtils.showShort(mContext, "解除成功，返回上一页");
                                             }
                                         }, mUser.getId(), mTagUser.getId());
-
 
                                         SingleChatActivity.this.finish();
                                     }
@@ -220,7 +209,7 @@ public class SingleChatActivity extends BaseActivity implements ChatTransDataEve
                         log.setContent(msg);
                         log.setUrl(mUser.getUrl());
                         log.setType(1);
-                        saveLog(log);
+                        saveLog(log, null);
                     } else
                         Toast.makeText(mContext, "数据发送失败。错误码是：" + code + "！", Toast.LENGTH_SHORT).show();
                 }
@@ -230,25 +219,46 @@ public class SingleChatActivity extends BaseActivity implements ChatTransDataEve
         mEdit.setText("");
     }
 
-    public void saveLog(ChatLog log) {
+    public void saveLog(ChatLog log, User user) {
         ChatLogHelper.insert(log);
         List<ChatLog> result = ChatLogHelper.queryAll();
         LogUtils.d(TAG, "数据记录长度增到[" + result.size() + "]");
 
-        mData.add(log);
-        mAdapter.notifyDataSetChanged();
-        //移动到尾部
-        mLog.smoothScrollToPosition(mLog.getCount() - 1);
+        if(log.getLogno().equals(mTagUser.getChatId() +"-"+ mUser.getChatId())){
+            mData.add(log);
+            mAdapter.notifyDataSetChanged();
+            //移动到尾部
+            mLog.smoothScrollToPosition(mLog.getCount() - 1);
+        } else {
+            boolean flag = true;
+            List<RecentMsg> list = RecentMsgHelper.queryById(mUser.getId());
+            for (RecentMsg entity : list) {
+                if (entity.getId().equals(user.getId())) {
+
+                    entity.setCount(entity.getCount() + 1);
+                    entity.setTime(new Date(System.currentTimeMillis()));
+                    RecentMsgHelper.update(entity);
+                    flag = false;
+                    break;
+                }
+            }
+            if (flag) {
+                RecentMsg entity = new RecentMsg();
+                entity.setOwner(mUser.getId());
+                entity.setId(user.getId());
+                entity.setCount(1);
+                entity.setUrl(user.getUrl());
+                entity.setName(user.getName() + "(" + user.getId() + ")");
+                entity.setNote(user.getNote());
+                entity.setTime(new Date(System.currentTimeMillis()));
+                RecentMsgHelper.insert(entity);
+            }
+
+        }
+
     }
 
-
-    public User getTargetUser() {
-        return mTagUser;
-    }
-
-
-    private void getTagUserChatIdSvc(String id) {
-
+    private void  getTagUserChatIdSvc(String id) {
         ApiClientImpl.getUserInfoSvc(new RetrofitCallbackListener() {
             @Override
             public void receive(Result result) {
@@ -260,34 +270,66 @@ public class SingleChatActivity extends BaseActivity implements ChatTransDataEve
                 }else {
                     mData.addAll(data);
                 }
-                mAdapter.notifyDataSetChanged();
-                //移动到尾部
-                mLog.smoothScrollToPosition(mLog.getCount() - 1);
+
+                Activity a = (Activity) mContext;
+                a.runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        mTitle.setText(mTagUser.getName());
+                        mAdapter.notifyDataSetChanged();
+                        //移动到尾部
+                        mLog.smoothScrollToPosition(mLog.getCount() - 1);
+                    }
+                });
+
             }
         }, id);
 
+    }
+
+    public void getTagUserInfo(int chatId, final String content){
+        ApiClientImpl.getUserInfoSvc(new RetrofitCallbackListener() {
+            @Override
+            public void receive(Result result) {
+                User user = ApiClient.gson.fromJson(result.getModel().toString(), User.class);
+                ChatLog log = new ChatLog();
+                log.setLogno(user.getChatId() +"-"+ mUser.getChatId());
+                log.setName(user.getName() + "(" + user.getId() + ")");
+                log.setContent(content);
+                log.setType(2);
+                log.setDate(new Date(System.currentTimeMillis()));
+                log.setUrl(user.getUrl());
+                saveLog(log, user);
+            }
+        }, chatId);
     }
 
 
     @Override
     public void onTransBuffer(String fingerPrintOfProtocol, int userId, String content) {
         Log.d(TAG, "收到来自用户[" + userId + "]的消息:" + content + "," + fingerPrintOfProtocol);
+        TipUtils.tipMsg(mContext);
         ChatLog log = new ChatLog();
+        //设置信息为填充时的obj
         log.setLogno(userId +"-"+ mUser.getChatId());
         log.setContent(content);
         log.setUrl(Constant.USER_DEFAULT_HEAD_URL);
         log.setName(userId + "");
         log.setType(2);
-        User user = this.getTargetUser();
-        if (user != null) {
-            log.setLogno(user.getChatId() +"-"+ mUser.getChatId());
-            log.setName(user.getName() + "(" + user.getId() + ")");
+
+        //判断是否为本好友发送的消息
+        if(userId == mTagUser.getChatId()){
+            log.setLogno(mTagUser.getChatId() +"-"+ mUser.getChatId());
+            log.setName(mTagUser.getName() + "(" + mTagUser.getId() + ")");
             log.setContent(content);
             log.setType(2);
             log.setDate(new Date(System.currentTimeMillis()));
-            log.setUrl(user.getUrl());
+            log.setUrl(mTagUser.getUrl());
+            saveLog(log, null);
+        } else{
+            getTagUserInfo(userId, content);
         }
-        saveLog(log);
+
     }
 
     @Override
@@ -306,6 +348,4 @@ public class SingleChatActivity extends BaseActivity implements ChatTransDataEve
             Log.d(TAG, "收到对方已收到消息事件的通知，fp=" + theFingerPrint);
         }
     }
-
-
 }

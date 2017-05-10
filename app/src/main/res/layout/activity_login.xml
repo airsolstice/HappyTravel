@@ -27,7 +27,7 @@
             android:layout_height="wrap_content"
             android:layout_centerInParent="true"
             android:text="@string/title_activity_login"
-            android:textColor="@color/black"
+            android:textColor="@color/gray_dark"
             android:textSize="30sp" />
     </RelativeLayout>
 
@@ -71,6 +71,7 @@
             android:layout_height="wrap_content"
             android:layout_gravity="right"
             android:layout_marginRight="10dp"
+            android:textColor="@color/gray_dark"
             android:text="@string/save_info" />
 
 

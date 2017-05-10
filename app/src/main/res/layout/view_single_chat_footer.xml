@@ -16,27 +16,30 @@
             android:layout_height="35dp"
             android:layout_marginLeft="15dp"
             android:layout_marginRight="5dp"
-            android:src="@mipmap/ic_photo_32" />
+            android:padding="6dp"
+            android:src="@mipmap/ic_photo_64" />
 
 
         <ImageView
             android:layout_width="35dp"
             android:layout_height="35dp"
             android:layout_margin="5dp"
-            android:src="@mipmap/ic_camera_32" />
+            android:padding="3dp"
+            android:src="@mipmap/ic_camera_64" />
 
         <ImageView
             android:layout_width="35dp"
             android:layout_height="35dp"
             android:layout_margin="5dp"
             android:padding="2dp"
-            android:src="@mipmap/ic_emotion_32" />
+            android:src="@mipmap/ic_emotion_64" />
 
         <ImageView
             android:layout_width="35dp"
             android:layout_height="35dp"
             android:layout_margin="5dp"
-            android:src="@mipmap/ic_file_32" />
+            android:padding="2dp"
+            android:src="@mipmap/ic_file_64" />
 
     </LinearLayout>
 
@@ -64,7 +67,8 @@
             android:layout_gravity="bottom"
             android:layout_marginBottom="10dp"
             android:layout_marginLeft="-60dp"
-            android:src="@mipmap/ic_send_32" />
+            android:padding="5dp"
+            android:src="@mipmap/ic_send_64" />
 
     </LinearLayout>
 

@@ -9,7 +9,7 @@
         android:layout_height="30dp"
         android:layout_marginLeft="10dp"
         android:layout_gravity="center_vertical"
-        android:src="@mipmap/ic_group_48" />
+        android:src="@mipmap/ic_discuss_96" />
 
 
     <TextView
@@ -19,6 +19,7 @@
         android:textAppearance="?android:attr/textAppearanceMedium"
         android:layout_marginLeft="10dp"
         android:layout_marginRight="50dp"
+        android:textSize="18sp"
         android:hint="name"
         android:gravity="center_vertical"
         android:singleLine="true" />

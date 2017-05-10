@@ -33,7 +33,7 @@ public class TestActivity extends Activity {
         Uri uri = Uri.parse(Constant.USER_DEFAULT_HEAD_URL);
         view.setImageURI(uri);
 
-       // initLocation();
+        // initLocation();
 
     }
 
@@ -106,4 +106,7 @@ public class TestActivity extends Activity {
         super.onDestroy();
         destroyLocation();
     }
+
+
+
 }

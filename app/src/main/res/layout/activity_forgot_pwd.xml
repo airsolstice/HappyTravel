@@ -78,7 +78,7 @@
                 android:padding="10dp"
                 android:gravity="center"
                 android:layout_margin="10dp"
-                android:background="#2962ff"
+                android:background="@color/blue"
                 />
         </LinearLayout>
 
@@ -88,7 +88,7 @@
             android:layout_height="40dp"
             android:layout_margin="10dp"
             android:background="@color/blue"
-            android:text="下一步"
+            android:text="找回"
             android:textColor="@color/black"
             android:textSize="20sp" />
 

@@ -21,7 +21,7 @@ import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
-import com.admin.ht.IM.IMClientManager;
+
 import com.admin.ht.R;
 import com.admin.ht.base.BaseActivity;
 import com.admin.ht.base.Constant;
@@ -35,12 +35,13 @@ import net.openmob.mobileimsdk.android.core.LocalUDPDataSender;
 
 import java.util.ArrayList;
 import java.util.List;
+
 import butterknife.Bind;
 import butterknife.OnClick;
 
 /**
  * 主页Activity
- *
+ * <p>
  * Created by Solstice on 3/12/2017.
  */
 public class HomeActivity extends BaseActivity {
@@ -61,7 +62,7 @@ public class HomeActivity extends BaseActivity {
     TextView mTitle;
 
     private List<Fragment> mFrgs = new ArrayList<>();
-    private  long mExitTime;
+    private long mExitTime;
 
     @Override
     protected String getTAG() {
@@ -90,8 +91,8 @@ public class HomeActivity extends BaseActivity {
         super.onCreate(savedInstanceState);
 
         User user = (User) getIntent().getExtras().get(Constant.USER);
-        if(user != null){
-            if (isDebug){
+        if (user != null) {
+            if (isDebug) {
                 LogUtils.e(TAG, user.toString());
             }
             putUser(user);
@@ -128,35 +129,34 @@ public class HomeActivity extends BaseActivity {
                 .setPositiveButton("确定", new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int id) {
                         //在连不上IM服务器时的异常处理
-                        if(!ClientCoreSDK.getInstance().isLocalDeviceNetworkOk()){
+                        if (!ClientCoreSDK.getInstance().isLocalDeviceNetworkOk()) {
                             ToastUtils.showShort(mContext, "网络异常，请重新启动应用");
                             startActivity(new Intent(mContext, LoginActivity.class));
                             finish();
                             return;
                         }
 
-                        if(!ClientCoreSDK.getInstance().isLoginHasInit()){
+                        if (!ClientCoreSDK.getInstance().isLoginHasInit()) {
                             ToastUtils.showShort(mContext, "登录异常，请重新启动应用");
                             startActivity(new Intent(mContext, LoginActivity.class));
                             finish();
                             return;
                         }
 
-                        if(!ClientCoreSDK.getInstance().isConnectedToServer()){
+                        if (!ClientCoreSDK.getInstance().isConnectedToServer()) {
                             ToastUtils.showShort(mContext, "IM服务器异常，请重新启动应用");
                             startActivity(new Intent(mContext, LoginActivity.class));
                             finish();
                             return;
                         }
 
-                        new AsyncTask<Object, Integer, Integer>(){
+                        new AsyncTask<Object, Integer, Integer>() {
                             @Override
                             protected Integer doInBackground(Object... params) {
                                 int code = -1;
-                                try{
+                                try {
                                     code = LocalUDPDataSender.getInstance(mContext).sendLoginout();
-                                }
-                                catch (Exception e){
+                                } catch (Exception e) {
                                     Log.w(TAG, e);
                                 }
 
@@ -179,16 +179,14 @@ public class HomeActivity extends BaseActivity {
     }
 
 
-
-
     @OnClick(R.id.add)
-    public void getMenu(){
+    public void getMenu() {
         PopupMenu popup = new PopupMenu(mContext, mAdd);
         popup.getMenuInflater().inflate(R.menu.menu_home, popup.getMenu());
         popup.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
             @Override
             public boolean onMenuItemClick(MenuItem item) {
-                switch (item.getItemId()){
+                switch (item.getItemId()) {
                     case R.id.add_personal:
                         startActivityForResult(new Intent(mContext, PersonalAdditionActivity.class), Constant.CODE);
                         break;
@@ -219,12 +217,6 @@ public class HomeActivity extends BaseActivity {
         return super.onKeyDown(keyCode, event);
     }
 
-    @Override
-    protected void onDestroy() {
-        IMClientManager.getInstance(mContext).release();
-        super.onDestroy();
-    }
-
     class PagerAdapter extends FragmentStatePagerAdapter implements ViewPager.OnPageChangeListener {
 
         public PagerAdapter(FragmentManager fm) {
@@ -244,7 +236,7 @@ public class HomeActivity extends BaseActivity {
         @Override
         public void onPageSelected(int position) {
             if (position == 0) {
-                if(!mPager.isNoScroll()){
+                if (!mPager.isNoScroll()) {
                     mPager.setNoScroll(true);
                 }
                 mBack.setVisibility(View.GONE);
@@ -255,7 +247,7 @@ public class HomeActivity extends BaseActivity {
 
             } else {
                 mTitle.setText("联系人");
-                if(mPager.isNoScroll()){
+                if (mPager.isNoScroll()) {
                     mPager.setNoScroll(false);
                 }
                 mBack.setVisibility(View.VISIBLE);

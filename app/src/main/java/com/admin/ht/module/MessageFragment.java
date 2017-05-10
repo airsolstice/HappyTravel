@@ -1,8 +1,14 @@
 package com.admin.ht.module;
 
 import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
+import android.media.MediaPlayer;
+import android.media.RingtoneManager;
+import android.net.Uri;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Vibrator;
 import android.support.annotation.Nullable;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -13,7 +19,6 @@ import android.widget.ListView;
 
 import com.admin.ht.R;
 import com.admin.ht.adapter.RecentMsgAdapter;
-import com.admin.ht.base.BaseActivity;
 import com.admin.ht.base.BaseFragment;
 import com.admin.ht.base.Constant;
 import com.admin.ht.db.ChatLogHelper;
@@ -27,6 +32,7 @@ import com.admin.ht.retro.ApiClient;
 import com.admin.ht.retro.ApiClientImpl;
 import com.admin.ht.retro.RetrofitCallbackListener;
 import com.admin.ht.utils.LogUtils;
+import com.admin.ht.utils.TipUtils;
 
 import net.openmob.mobileimsdk.android.ClientCoreSDK;
 import net.openmob.mobileimsdk.android.event.ChatTransDataEvent;
@@ -37,27 +43,27 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-import rx.Subscriber;
-import rx.schedulers.Schedulers;
 
 /**
  * 消息碎片类
  * <p>
  * Created by Solstice on 3/12/2017.
  */
-public class MessageFragment extends BaseFragment implements AdapterView.OnItemClickListener, ChatTransDataEvent, MessageQoSEvent {
+public class MessageFragment extends BaseFragment
+        implements AdapterView.OnItemClickListener, ChatTransDataEvent, MessageQoSEvent {
 
     private ListView mListView = null;
-    private List<RecentMsg> mData = new ArrayList<>();
+    private List<RecentMsg> mData = null;
     private RecentMsgAdapter mAdapter = null;
+    private Handler mHandler = null;
 
+    public MessageFragment(Handler handler) {
+        this.mHandler = handler;
+    }
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        //注册IM回调
-        ClientCoreSDK.getInstance().setChatTransDataEvent(this);
-        ClientCoreSDK.getInstance().setMessageQoSEvent(this);
         //配置当前用户信息
         if (mUser == null) {
             mUser = getUser();
@@ -70,14 +76,26 @@ public class MessageFragment extends BaseFragment implements AdapterView.OnItemC
 
         View v = inflater.inflate(R.layout.layout_message, null);
         mListView = (ListView) v.findViewById(R.id.list_view);
-        mData.clear();
+        mData = new ArrayList<>();
         List<RecentMsg> list = RecentMsgHelper.queryById(mUser.getId());
         mData.addAll(list);
-        mAdapter = new RecentMsgAdapter(getActivity(), mData);
+        mAdapter = new RecentMsgAdapter(getContext(), mData);
         mListView.setAdapter(mAdapter);
         mListView.setOnItemClickListener(this);
 
         return v;
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        //注册IM回调
+        ClientCoreSDK.getInstance().setChatTransDataEvent(this);
+        ClientCoreSDK.getInstance().setMessageQoSEvent(this);
+        mData.clear();
+        List<RecentMsg> list = RecentMsgHelper.queryById(mUser.getId());
+        mData.addAll(list);
+        mAdapter.notifyDataSetChanged();
     }
 
     @Override
@@ -93,15 +111,20 @@ public class MessageFragment extends BaseFragment implements AdapterView.OnItemC
     @Override
     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
         RecentMsg msg = mData.get(position);
+        msg.setCount(0);
+        RecentMsgHelper.update(msg);
+        mData.get(position).setCount(1);
+        mAdapter.notifyDataSetChanged();
+
         Item item = new Item();
         item.setId(msg.getId());
         item.setUrl(msg.getUrl());
         item.setStatus(1);
         item.setName(msg.getName());
         item.setNote(msg.getNote());
-        Intent intent = new Intent(getActivity(), SingleChatActivity.class);
+        Intent intent = new Intent(getContext(), SingleChatActivity.class);
         intent.putExtra(Constant.TARGET_USER, item);
-        getActivity().startActivity(intent);
+        getContext().startActivity(intent);
     }
 
     public void saveMsg(User user) {
@@ -109,6 +132,7 @@ public class MessageFragment extends BaseFragment implements AdapterView.OnItemC
         for (RecentMsg entity : mData) {
             if (entity.getId().equals(user.getId())) {
                 entity.setCount(entity.getCount() + 1);
+                entity.setTime(new Date(System.currentTimeMillis()));
                 RecentMsgHelper.update(entity);
                 flag = false;
                 break;
@@ -122,14 +146,13 @@ public class MessageFragment extends BaseFragment implements AdapterView.OnItemC
             entity.setUrl(user.getUrl());
             entity.setName(user.getName() + "(" + user.getId() + ")");
             entity.setNote(user.getNote());
+            entity.setTime(new Date(System.currentTimeMillis()));
             mData.add(entity);
             RecentMsgHelper.insert(entity);
         }
 
-        Activity a = getActivity();
-        if (a == null) {
-            return;
-        }
+        Activity a = (Activity) getContext();
+
         a.runOnUiThread(new Runnable() {
             @Override
             public void run() {
@@ -138,31 +161,28 @@ public class MessageFragment extends BaseFragment implements AdapterView.OnItemC
         });
     }
 
-    private void getUserInfoSvc(final int chatId, final String content) {
+    @Override
+    public void onTransBuffer(String fingerPrintOfProtocol, final int userId, final String content) {
+        Log.d(TAG, "收到来自用户[" + userId + "]的消息:" + content + "," + fingerPrintOfProtocol);
         ApiClientImpl.getUserInfoSvc(new RetrofitCallbackListener() {
             @Override
             public void receive(Result result) {
                 User user = ApiClient.gson.fromJson(result.getModel().toString(), User.class);
                 saveMsg(user);
-                ChatLog entity = new ChatLog();
-                entity.setLogno(user.getChatId() + "-" + mUser.getChatId());
-                entity.setName(user.getName() + "(" + user.getId() + ")");
-                entity.setContent(content);
-                entity.setType(2);
-                entity.setDate(new Date(System.currentTimeMillis()));
-                entity.setUrl(user.getUrl());
-                ChatLogHelper.insert(entity);
+                ChatLog log = new ChatLog();
+                log.setLogno(user.getChatId() + "-" + mUser.getChatId());
+                log.setName(user.getName() + "(" + user.getId() + ")");
+                log.setContent(content);
+                log.setType(2);
+                log.setDate(new Date(System.currentTimeMillis()));
+                log.setUrl(user.getUrl());
+                ChatLogHelper.insert(log);
                 List<ChatLog> list = ChatLogHelper.queryAll();
                 LogUtils.d(TAG, "数据记录长度增到[" + list.size() + "]");
             }
-        }, chatId);
+        }, userId);
 
-    }
-
-    @Override
-    public void onTransBuffer(String fingerPrintOfProtocol, int userId, String content) {
-        Log.d(TAG, "收到来自用户[" + userId + "]的消息:" + content + "," + fingerPrintOfProtocol);
-        getUserInfoSvc(userId, content);
+        TipUtils.tipMsg(getContext());
     }
 
     @Override
@@ -181,6 +201,5 @@ public class MessageFragment extends BaseFragment implements AdapterView.OnItemC
             Log.d(TAG, "收到对方已收到消息事件的通知，fp=" + theFingerPrint);
         }
     }
-
 
 }

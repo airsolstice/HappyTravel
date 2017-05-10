@@ -21,6 +21,8 @@ import com.admin.ht.R;
 import com.admin.ht.base.BaseActivity;
 import com.admin.ht.base.BaseFragment;
 import com.admin.ht.base.Constant;
+import com.admin.ht.db.ChatLogHelper;
+import com.admin.ht.model.ChatLog;
 import com.admin.ht.model.ChatMember;
 import com.admin.ht.model.MarkerInfo;
 import com.admin.ht.model.Result;
@@ -32,6 +34,7 @@ import com.admin.ht.utils.BitmapUtils;
 import com.admin.ht.utils.ImageUtils;
 import com.admin.ht.utils.LogUtils;
 import com.admin.ht.utils.StringUtils;
+import com.admin.ht.utils.TipUtils;
 import com.admin.ht.utils.ToastUtils;
 import com.amap.api.maps.AMap;
 import com.amap.api.maps.CameraUpdateFactory;
@@ -49,12 +52,14 @@ import com.nostra13.universalimageloader.core.ImageLoader;
 import com.nostra13.universalimageloader.core.assist.ImageSize;
 import com.nostra13.universalimageloader.core.listener.SimpleImageLoadingListener;
 
+import net.openmob.mobileimsdk.android.ClientCoreSDK;
 import net.openmob.mobileimsdk.android.event.ChatTransDataEvent;
 import net.openmob.mobileimsdk.android.event.MessageQoSEvent;
 import net.openmob.mobileimsdk.server.protocal.Protocal;
 
 import java.lang.reflect.Type;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -65,7 +70,7 @@ import java.util.Map;
  * Created by Solstice on 3/12/2017.
  */
 public class MapFragment extends BaseFragment
-        implements View.OnClickListener, ChatTransDataEvent, MessageQoSEvent, AMap.OnMyLocationChangeListener {
+        implements View.OnClickListener, ChatTransDataEvent, MessageQoSEvent, AMap.OnMyLocationChangeListener, AMap.OnMarkerClickListener{
 
     private MapView mMapView;
     private TextView mGroupNameView;
@@ -79,10 +84,6 @@ public class MapFragment extends BaseFragment
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        //注册IM监听回调
-        //ClientCoreSDK.getInstance().setChatTransDataEvent(this);
-        //ClientCoreSDK.getInstance().setMessageQoSEvent(this);
-
         //配置当前用户信息
         if (mUser == null) {
             mUser = getUser();
@@ -127,13 +128,19 @@ public class MapFragment extends BaseFragment
         //设置定位蓝点的Style
         aMap.setMyLocationStyle(myLocationStyle);
         //设置缩放级别
-        aMap.moveCamera(CameraUpdateFactory.zoomTo(15));
+        aMap.moveCamera(CameraUpdateFactory.zoomTo(13));
         //设置默认定位按钮是否显示，非必需设置。
         aMap.getUiSettings().setMyLocationButtonEnabled(true);
         //设置为true表示启动显示定位蓝点，false表示隐藏定位蓝点并不进行定位，默认是false。
         aMap.setMyLocationEnabled(true);
         //设置定位回调监听
         aMap.setOnMyLocationChangeListener(this);
+        //设置指南针
+        aMap.getUiSettings().setCompassEnabled(true);
+        //地图比例尺显示
+        aMap.getUiSettings().setScaleControlsEnabled(false);
+
+        aMap.setOnMarkerClickListener(this);
     }
 
     public void addCustomMarker(final MarkerInfo info) {
@@ -155,6 +162,10 @@ public class MapFragment extends BaseFragment
                                 .title(info.getName())
                                 .snippet("你好！这是地图定位演示")
                                 .icon(BitmapDescriptorFactory.fromBitmap(bitmap)));
+                        marker.setAutoOverturnInfoWindow(false);
+                        marker.setBelowMaskLayer(true);
+                        marker.setInfoWindowEnable(false);
+                        marker.setDraggable(true);
                         mMarkerData.add(marker);
 
                     }
@@ -171,6 +182,10 @@ public class MapFragment extends BaseFragment
     public void onResume() {
         super.onResume();
         mMapView.onResume();
+        //注册IM监听回调
+        ClientCoreSDK.getInstance().setChatTransDataEvent(this);
+        ClientCoreSDK.getInstance().setMessageQoSEvent(this);
+
         if (mUser == null) {
             mUser = getUser();
         }
@@ -322,51 +337,66 @@ public class MapFragment extends BaseFragment
             return;
         }
 
-        ApiClientImpl.getUserMarkerSvc(new RetrofitCallbackListener() {
-            @Override
-            public void receive(Result result) {
-                if(mMarker != null){
-                    mMarker.remove();
+        if(mMarker == null){
+            ApiClientImpl.getUserMarkerSvc(new RetrofitCallbackListener() {
+                @Override
+                public void receive(Result result) {
+                    final MarkerInfo info = ApiClient.gson.fromJson(result.getModel().toString(), MarkerInfo.class);
+                    final View v = View.inflate(getActivity(), R.layout.view_my_marker, null);
+                    final SimpleDraweeView icon = (SimpleDraweeView) v.findViewById(R.id.icon);
+                    int rw = icon.getMeasuredWidth();
+                    int rh = icon.getMeasuredHeight();
+                    ImageSize targetSize = new ImageSize(rw, rh);
+                    ImageLoader.getInstance().loadImage(info.getUrl(), targetSize, ImageUtils.getDisplayImageOptions(),
+                            new SimpleImageLoadingListener() {
+                                @Override
+                                public void onLoadingComplete(String imageUri, View view, Bitmap loadedImage) {
+                                    loadedImage = BitmapUtils.makeRoundCorner(loadedImage);
+                                    loadedImage = BitmapUtils.zoomBitmap(loadedImage, 50, 50);
+                                    icon.setImageBitmap(loadedImage);
+                                    Bitmap bitmap = BitmapUtils.convertViewToBitmap(v);
+                                    mMarker = aMap.addMarker(new MarkerOptions().anchor(0.5f, 1)
+                                            .position(new LatLng(info.getLat(), info.getLng()))
+                                            .title(info.getName())
+                                            .icon(BitmapDescriptorFactory.fromBitmap(bitmap)));
+                                    mMarker.setAutoOverturnInfoWindow(false);
+                                    mMarker.setBelowMaskLayer(true);
+                                    mMarker.setInfoWindowEnable(false);
+                                }
+                            });
                 }
-
-                final MarkerInfo info = ApiClient.gson.fromJson(result.getModel().toString(), MarkerInfo.class);
-                final View v = View.inflate(getActivity(), R.layout.view_marker, null);
-                final SimpleDraweeView icon = (SimpleDraweeView) v.findViewById(R.id.icon);
-                int rw = icon.getMeasuredWidth();
-                int rh = icon.getMeasuredHeight();
-                ImageSize targetSize = new ImageSize(rw, rh);
-                ImageLoader.getInstance().loadImage(info.getUrl(), targetSize, ImageUtils.getDisplayImageOptions(),
-                        new SimpleImageLoadingListener() {
-                            @Override
-                            public void onLoadingComplete(String imageUri, View view, Bitmap loadedImage) {
-                                loadedImage = BitmapUtils.makeRoundCorner(loadedImage);
-                                loadedImage = BitmapUtils.zoomBitmap(loadedImage, 50, 50);
-                                icon.setImageBitmap(loadedImage);
-                                Bitmap bitmap = BitmapUtils.convertViewToBitmap(v);
-                                 mMarker = aMap.addMarker(new MarkerOptions().anchor(0.5f, 1)
-                                        .position(new LatLng(info.getLat(), info.getLng()))
-                                        .title(info.getName())
-                                        .icon(BitmapDescriptorFactory.fromBitmap(bitmap)));
-                            }
-                        });
-            }
-        }, mUser.getId());
+            }, mUser.getId());
+        } else {
+            mMarker.setPosition(new LatLng(location.getLatitude(), location.getLongitude()));
+        }
 
         ApiClientImpl.updatePosSvc(null, mUser.getId(),
                 new LatLng(location.getLatitude(), location.getLongitude()));
     }
 
     @Override
-    public void onTransBuffer(String fingerPrintOfProtocol, int userId, String content) {
+    public void onTransBuffer(String fingerPrintOfProtocol, int userId, final String content) {
         Log.d(TAG, "收到来自用户[" + userId + "]的消息:" + content + "," + fingerPrintOfProtocol);
 
-        User user = new User();
-        user.setChatId(userId);
-        user.setNote(content);
-        //保存信息到本地SQLite数据库
-        //saveMsg(user);
-        //在地图上展示消息
-        //displayMsgInMarker(userId, content);
+        ApiClientImpl.getUserInfoSvc(new RetrofitCallbackListener() {
+            @Override
+            public void receive(Result result) {
+                User user = ApiClient.gson.fromJson(result.getModel().toString(), User.class);
+                ChatLog log = new ChatLog();
+                log.setLogno(user.getChatId() + "-" + mUser.getChatId());
+                log.setName(user.getName() + "(" + user.getId() + ")");
+                log.setContent(content);
+                log.setType(2);
+                log.setDate(new Date(System.currentTimeMillis()));
+                log.setUrl(user.getUrl());
+                ChatLogHelper.insert(log);
+                List<ChatLog> list = ChatLogHelper.queryAll();
+                LogUtils.d(TAG, "数据记录长度增到[" + list.size() + "]");
+            }
+        }, userId);
+
+        TipUtils.tipMsg(getContext());
+
     }
 
     @Override
@@ -387,4 +417,20 @@ public class MapFragment extends BaseFragment
     }
 
 
+    @Override
+    public boolean onMarkerClick(Marker marker) {
+
+        LogUtils.e(TAG, marker.getTitle());
+        if(marker.getId() == mMarker.getId()){
+            Intent intent = new Intent(getContext(), InfoActivity.class);
+            intent.putExtra(Constant.USER, mUser);
+            startActivity(intent);
+        }else {
+            Intent intent = new Intent(getActivity(), GroupChatActivity.class);
+            //intent.putExtra(Constant.TARGET_USER, entity);
+            startActivity(intent);
+        }
+
+        return false;
+    }
 }

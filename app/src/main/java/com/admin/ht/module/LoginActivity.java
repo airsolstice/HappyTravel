@@ -109,11 +109,13 @@ public class LoginActivity extends BaseActivity implements ChatBaseEvent{
         //输入合法性判断
         if (TextUtils.isEmpty(mPhoneStr) || !StringUtils.isPhone(mPhoneStr)) {
             mPhone.setText("");
+            mPhone.requestFocus();
             mPhone.setHintTextColor(Color.parseColor("#FF4081"));
             ToastUtils.showShort(mContext, "帐号不正确");
             return;
         } else if (TextUtils.isEmpty(mPwdStr) || mPwdStr.length() < 6 || mPwdStr.length() > 18) {
             mPwd.setText("");
+            mPwd.requestFocus();
             mPwd.setHintTextColor(Color.parseColor("#FF4081"));
             ToastUtils.showShort(mContext, "密码不正确");
             return;
@@ -153,9 +155,7 @@ public class LoginActivity extends BaseActivity implements ChatBaseEvent{
                 // 登陆成功
                 if (code == 0) {
                     int id = ClientCoreSDK.getInstance().getCurrentUserId();
-                    Log.d(TAG, "登陆成功！" + id);
                     LogUtils.i(TAG, "登录成功，" + id);
-
                 }
                 else {
                     Log.d(TAG, "登陆失败，错误码=" + code);

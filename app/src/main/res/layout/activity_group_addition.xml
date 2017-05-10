@@ -18,17 +18,20 @@
             android:layout_height="40dp"
             android:layout_centerInParent="true"
             android:layout_margin="10dp"
+            android:textSize="15sp"
+            android:drawableLeft="@mipmap/ic_user_64"
+            android:drawablePadding="10dp"
             android:background="@drawable/rect_white_blue_border"
             android:hint=" 搜索群"
             android:inputType="phone"
-            android:padding="10dp" />
+ />
 
         <ImageView
             android:id="@+id/do_search"
             android:layout_width="40dp"
             android:layout_height="40dp"
             android:src="@mipmap/ic_search_48"
-            android:padding="5dp"
+            android:padding="8dp"
             android:layout_alignParentRight="true"
             android:layout_centerVertical="true"
             android:layout_marginRight="10dp"
@@ -42,7 +45,7 @@
         android:layout_margin="10dp"
         android:gravity="center"
         android:text="找不到结果？那就创建一个吧！"
-        android:textColor="@color/blue"
+        android:textColor="@color/gray_dark"
         android:textSize="15sp" />
 
 

@@ -19,35 +19,64 @@
         android:weightSum="3">
 
 
-        <TextView
-            android:id="@+id/fri"
+        <RelativeLayout
             android:layout_width="1dp"
-            android:layout_height="match_parent"
             android:layout_weight="1"
             android:gravity="center"
-            android:text="好友"
-            android:textColor="@color/blue"
-            android:textSize="15sp" />
+            android:layout_height="match_parent">
 
-        <TextView
-            android:id="@+id/group"
-            android:layout_width="1dp"
-            android:layout_height="match_parent"
-            android:layout_weight="1"
-            android:gravity="center"
-            android:text="群组"
-            android:textColor="@color/blue"
-            android:textSize="15sp" />
+            <TextView
+                android:id="@+id/fri"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:drawableTop="@mipmap/ic_fri_96"
+                android:drawablePadding="5dp"
+                android:text="好友"
+                android:textSize="15sp" />
 
-        <TextView
-            android:id="@+id/msg"
+        </RelativeLayout>
+
+
+
+        <RelativeLayout
             android:layout_width="1dp"
-            android:layout_height="match_parent"
             android:layout_weight="1"
             android:gravity="center"
-            android:text="消息"
-            android:textColor="@color/blue"
-            android:textSize="15sp" />
+            android:layout_height="match_parent">
+
+            <TextView
+                android:id="@+id/group"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:drawableTop="@mipmap/ic_group_96"
+                android:drawablePadding="5dp"
+                android:text="群组"
+
+                android:textSize="15sp" />
+
+        </RelativeLayout>
+
+        <RelativeLayout
+            android:layout_width="1dp"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:layout_height="match_parent">
+
+            <TextView
+                android:id="@+id/msg"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:drawablePadding="5dp"
+                android:drawableTop="@mipmap/ic_msg_96"
+                android:text="消息"
+                android:textSize="15sp" />
+        </RelativeLayout>
+
+
+
 
     </LinearLayout>
 

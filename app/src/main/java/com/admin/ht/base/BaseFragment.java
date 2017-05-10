@@ -49,6 +49,7 @@ public abstract class BaseFragment extends Fragment {
     @Override
     public Context getContext(){
         if(mContext == null){
+
             return BaseApplication.getInstance();
         }
         return mContext;

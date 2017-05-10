@@ -5,6 +5,7 @@ import android.content.Context;
 import com.admin.ht.IM.impl.ChatBaseEventImpl;
 import com.admin.ht.IM.impl.ChatTransDataEventImpl;
 import com.admin.ht.IM.impl.MessageQoSEventImpl;
+import com.admin.ht.base.Constant;
 
 import net.openmob.mobileimsdk.android.ClientCoreSDK;
 import net.openmob.mobileimsdk.android.conf.ConfigEntity;
@@ -39,8 +40,7 @@ public class IMClientManager {
             ConfigEntity.appKey = "5418023dfd98c579b6001741";
 
             // 设置服务器ip和服务器端口
-            //ConfigEntity.serverIP = "rbcore.openmob.net";
-            ConfigEntity.serverIP = "192.168.2.227";
+            ConfigEntity.serverIP = Constant.SERVER_IP;
             ConfigEntity.serverUDPPort = 7901;
 
             // MobileIMSDK核心IM框架的敏感度模式设置

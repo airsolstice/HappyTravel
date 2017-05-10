@@ -15,7 +15,7 @@ import com.admin.ht.model.RecentMsg;
 /** 
  * DAO for table "RECENT_MSG".
 */
-public class RecentMsgDao extends AbstractDao<RecentMsg, String> {
+public class RecentMsgDao extends AbstractDao<RecentMsg, Long> {
 
     public static final String TABLENAME = "RECENT_MSG";
 
@@ -24,13 +24,14 @@ public class RecentMsgDao extends AbstractDao<RecentMsg, String> {
      * Can be used for QueryBuilder and for referencing column names.
      */
     public static class Properties {
-        public final static Property Id = new Property(0, String.class, "id", true, "ID");
-        public final static Property Owner = new Property(1, String.class, "owner", false, "OWNER");
-        public final static Property No = new Property(2, int.class, "no", false, "NO");
+        public final static Property No = new Property(0, Long.class, "no", true, "_id");
+        public final static Property Id = new Property(1, String.class, "id", false, "ID");
+        public final static Property Owner = new Property(2, String.class, "owner", false, "OWNER");
         public final static Property Name = new Property(3, String.class, "name", false, "NAME");
         public final static Property Url = new Property(4, String.class, "url", false, "URL");
         public final static Property Count = new Property(5, int.class, "count", false, "COUNT");
         public final static Property Note = new Property(6, String.class, "note", false, "NOTE");
+        public final static Property Time = new Property(7, java.util.Date.class, "time", false, "TIME");
     }
 
 
@@ -46,13 +47,14 @@ public class RecentMsgDao extends AbstractDao<RecentMsg, String> {
     public static void createTable(Database db, boolean ifNotExists) {
         String constraint = ifNotExists? "IF NOT EXISTS ": "";
         db.execSQL("CREATE TABLE " + constraint + "\"RECENT_MSG\" (" + //
-                "\"ID\" TEXT PRIMARY KEY NOT NULL ," + // 0: id
-                "\"OWNER\" TEXT," + // 1: owner
-                "\"NO\" INTEGER NOT NULL ," + // 2: no
+                "\"_id\" INTEGER PRIMARY KEY ," + // 0: no
+                "\"ID\" TEXT," + // 1: id
+                "\"OWNER\" TEXT," + // 2: owner
                 "\"NAME\" TEXT," + // 3: name
                 "\"URL\" TEXT," + // 4: url
                 "\"COUNT\" INTEGER NOT NULL ," + // 5: count
-                "\"NOTE\" TEXT);"); // 6: note
+                "\"NOTE\" TEXT," + // 6: note
+                "\"TIME\" INTEGER);"); // 7: time
     }
 
     /** Drops the underlying database table. */
@@ -65,16 +67,20 @@ public class RecentMsgDao extends AbstractDao<RecentMsg, String> {
     protected final void bindValues(DatabaseStatement stmt, RecentMsg entity) {
         stmt.clearBindings();
  
+        Long no = entity.getNo();
+        if (no != null) {
+            stmt.bindLong(1, no);
+        }
+ 
         String id = entity.getId();
         if (id != null) {
-            stmt.bindString(1, id);
+            stmt.bindString(2, id);
         }
  
         String owner = entity.getOwner();
         if (owner != null) {
-            stmt.bindString(2, owner);
+            stmt.bindString(3, owner);
         }
-        stmt.bindLong(3, entity.getNo());
  
         String name = entity.getName();
         if (name != null) {
@@ -90,6 +96,11 @@ public class RecentMsgDao extends AbstractDao<RecentMsg, String> {
         String note = entity.getNote();
         if (note != null) {
             stmt.bindString(7, note);
+        }
+ 
+        java.util.Date time = entity.getTime();
+        if (time != null) {
+            stmt.bindLong(8, time.getTime());
         }
     }
 
@@ -97,16 +108,20 @@ public class RecentMsgDao extends AbstractDao<RecentMsg, String> {
     protected final void bindValues(SQLiteStatement stmt, RecentMsg entity) {
         stmt.clearBindings();
  
+        Long no = entity.getNo();
+        if (no != null) {
+            stmt.bindLong(1, no);
+        }
+ 
         String id = entity.getId();
         if (id != null) {
-            stmt.bindString(1, id);
+            stmt.bindString(2, id);
         }
  
         String owner = entity.getOwner();
         if (owner != null) {
-            stmt.bindString(2, owner);
+            stmt.bindString(3, owner);
         }
-        stmt.bindLong(3, entity.getNo());
  
         String name = entity.getName();
         if (name != null) {
@@ -123,47 +138,55 @@ public class RecentMsgDao extends AbstractDao<RecentMsg, String> {
         if (note != null) {
             stmt.bindString(7, note);
         }
+ 
+        java.util.Date time = entity.getTime();
+        if (time != null) {
+            stmt.bindLong(8, time.getTime());
+        }
     }
 
     @Override
-    public String readKey(Cursor cursor, int offset) {
-        return cursor.isNull(offset + 0) ? null : cursor.getString(offset + 0);
+    public Long readKey(Cursor cursor, int offset) {
+        return cursor.isNull(offset + 0) ? null : cursor.getLong(offset + 0);
     }    
 
     @Override
     public RecentMsg readEntity(Cursor cursor, int offset) {
         RecentMsg entity = new RecentMsg( //
-            cursor.isNull(offset + 0) ? null : cursor.getString(offset + 0), // id
-            cursor.isNull(offset + 1) ? null : cursor.getString(offset + 1), // owner
-            cursor.getInt(offset + 2), // no
+            cursor.isNull(offset + 0) ? null : cursor.getLong(offset + 0), // no
+            cursor.isNull(offset + 1) ? null : cursor.getString(offset + 1), // id
+            cursor.isNull(offset + 2) ? null : cursor.getString(offset + 2), // owner
             cursor.isNull(offset + 3) ? null : cursor.getString(offset + 3), // name
             cursor.isNull(offset + 4) ? null : cursor.getString(offset + 4), // url
             cursor.getInt(offset + 5), // count
-            cursor.isNull(offset + 6) ? null : cursor.getString(offset + 6) // note
+            cursor.isNull(offset + 6) ? null : cursor.getString(offset + 6), // note
+            cursor.isNull(offset + 7) ? null : new java.util.Date(cursor.getLong(offset + 7)) // time
         );
         return entity;
     }
      
     @Override
     public void readEntity(Cursor cursor, RecentMsg entity, int offset) {
-        entity.setId(cursor.isNull(offset + 0) ? null : cursor.getString(offset + 0));
-        entity.setOwner(cursor.isNull(offset + 1) ? null : cursor.getString(offset + 1));
-        entity.setNo(cursor.getInt(offset + 2));
+        entity.setNo(cursor.isNull(offset + 0) ? null : cursor.getLong(offset + 0));
+        entity.setId(cursor.isNull(offset + 1) ? null : cursor.getString(offset + 1));
+        entity.setOwner(cursor.isNull(offset + 2) ? null : cursor.getString(offset + 2));
         entity.setName(cursor.isNull(offset + 3) ? null : cursor.getString(offset + 3));
         entity.setUrl(cursor.isNull(offset + 4) ? null : cursor.getString(offset + 4));
         entity.setCount(cursor.getInt(offset + 5));
         entity.setNote(cursor.isNull(offset + 6) ? null : cursor.getString(offset + 6));
+        entity.setTime(cursor.isNull(offset + 7) ? null : new java.util.Date(cursor.getLong(offset + 7)));
      }
     
     @Override
-    protected final String updateKeyAfterInsert(RecentMsg entity, long rowId) {
-        return entity.getId();
+    protected final Long updateKeyAfterInsert(RecentMsg entity, long rowId) {
+        entity.setNo(rowId);
+        return rowId;
     }
     
     @Override
-    public String getKey(RecentMsg entity) {
+    public Long getKey(RecentMsg entity) {
         if(entity != null) {
-            return entity.getId();
+            return entity.getNo();
         } else {
             return null;
         }
@@ -171,7 +194,7 @@ public class RecentMsgDao extends AbstractDao<RecentMsg, String> {
 
     @Override
     public boolean hasKey(RecentMsg entity) {
-        return entity.getId() != null;
+        return entity.getNo() != null;
     }
 
     @Override

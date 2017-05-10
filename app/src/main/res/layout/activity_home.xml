@@ -18,8 +18,8 @@
             android:id="@+id/back"
             android:layout_width="50dp"
             android:layout_height="match_parent"
-            android:padding="10dp"
-            android:src="@mipmap/ic_back_32"
+            android:padding="15dp"
+            android:src="@mipmap/ic_back_64"
             android:visibility="gone" />
 
         <TextView
@@ -42,23 +42,23 @@
                 android:id="@+id/search"
                 android:layout_width="50dp"
                 android:layout_height="match_parent"
-                android:padding="10dp"
-                android:src="@mipmap/ic_settings_32" />
+                android:padding="12dp"
+                android:src="@mipmap/ic_settings_64" />
 
             <ImageView
                 android:id="@+id/contact"
                 android:layout_width="50dp"
                 android:layout_height="match_parent"
                 android:padding="10dp"
-                android:src="@mipmap/ic_group_32" />
+                android:src="@mipmap/ic_group_64" />
 
 
             <ImageView
                 android:id="@+id/add"
                 android:layout_width="50dp"
                 android:layout_height="match_parent"
-                android:padding="10dp"
-                android:src="@mipmap/ic_add_32"
+                android:padding="16dp"
+                android:src="@mipmap/ic_add_64"
                 android:visibility="gone" />
 
 

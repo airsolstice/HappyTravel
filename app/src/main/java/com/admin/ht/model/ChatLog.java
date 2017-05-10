@@ -1,5 +1,7 @@
 package com.admin.ht.model;
 
+import com.alibaba.fastjson.JSONObject;
+
 import org.greenrobot.greendao.annotation.Entity;
 import java.util.Date;
 import org.greenrobot.greendao.annotation.Generated;
@@ -94,5 +96,10 @@ public class ChatLog {
 
     public void setDate(Date date) {
         this.date = date;
+    }
+
+    @Override
+    public String toString() {
+        return JSONObject.toJSONString(this);
     }
 }

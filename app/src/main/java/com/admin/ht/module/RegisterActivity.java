@@ -129,25 +129,30 @@ public class RegisterActivity extends BaseActivity {
         if (TextUtils.isEmpty(mPhoneStr) || !StringUtils.isPhone(mPhoneStr)) {
             errStr = "手机号码格式不正确";
             mPhone.setText("");
+            mPhone.requestFocus();
             mPhone.setHintTextColor(Color.parseColor("#FF4081"));
         } else if (TextUtils.isEmpty(mEmailStr) || !StringUtils.isEmail(mEmailStr)) {
             //对于密码长度和格式的校验，可以参考ValidateUtils，由于测试方便，并未加上验证
             errStr = "邮箱格式不正确";
             mEmail.setText("");
+            mEmail.requestFocus();
             mEmail.setHintTextColor(Color.parseColor("#FF4081"));
         } else if (TextUtils.isEmpty(mPwdStr) || mPwdStr.length() < 6 || mPwdStr.length() > 18) {
             //对于密码长度和格式的校验，可以参考ValidateUtils，由于测试方便，并未加上验证
             errStr = "密码格式不正确";
             mPwd.setText("");
+            mPwd.requestFocus();
             mPwd.setHintTextColor(Color.parseColor("#FF4081"));
         } else if (!mVerifyStr.equals(mPwdStr)) {
             errStr = "两次密码输入不一致";
             mVerify.setText("");
             mPwd.setText("");
+            mPwd.requestFocus();
             mVerify.setHintTextColor(Color.parseColor("#FF4081"));
         } else if (mCodeStr.length() != 4) {
             errStr = "验证码输入有误";
             mIdentifyingCode.setText("");
+            mIdentifyingCode.requestFocus();
             mIdentifyingCode.setHintTextColor(Color.parseColor("#FF4081"));
         } else if (!mIsAgree.isChecked()) {
             errStr = "请阅读相关信息";
